@@ -1,19 +1,26 @@
 package route
 
 import (
-	"github.com/gin-gonic/gin"
 	"cqupt-ctf-be/controller"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-gonic/gin"
 )
 
 var route *gin.Engine
 
-func init(){
+func init() {
 	gin.SetMode(gin.ReleaseMode)
-	route =gin.Default()
+	route = gin.Default()
+	store := cookie.NewStore([]byte("SessionId"))
+	route.Use(sessions.Sessions("session", store))
 
 }
 
-func SetupRoute() *gin.Engine{
+func SetupRoute() *gin.Engine {
 	route.POST("/login", controller.Login)
+	route.POST("/signup", controller.SignUp)
+
+	route.GET("/questions", controller.Question)
 	return route
 }
