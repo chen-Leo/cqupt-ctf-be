@@ -2,6 +2,7 @@ package route
 
 import (
 	"cqupt-ctf-be/controller"
+	"cqupt-ctf-be/middleware"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,12 @@ func SetupRoute() *gin.Engine {
 	route.POST("/login", controller.Login)
 	route.POST("/signup", controller.SignUp)
 
-	route.GET("/questions", controller.Question)
+	g:=route.Group("")
+	g.Use(middleware.Auth)
+
+	g.GET("/questions", controller.Question)
+	g.POST("/submit",controller.Submit)
+	g.GET("/rank",controller.ScoreBoard)
+
 	return route
 }

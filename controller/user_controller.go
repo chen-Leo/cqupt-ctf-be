@@ -33,7 +33,11 @@ func Login(c *gin.Context) {
 	err = user.FindByUsernameAndPassword()
 	if err == nil {
 		session := sessions.Default(c)
-		session.Set("id", user.ID)
+		session.Set("uid", user.ID)
+		err=session.Save()
+		if err!=nil {
+			fmt.Println(err.Error())
+		}
 		response.OkWithData(c, gin.H{
 			"username": user.Username,
 			"email":    user.Email,
@@ -63,6 +67,12 @@ func SignUp(c *gin.Context) {
 	secret.ToSha256(&user.Password)
 	err = user.InsertNew()
 	if err == nil {
+		s := sessions.Default(c)
+		s.Set("uid", user.ID)
+		err=s.Save()
+		if err!=nil {
+			fmt.Println(err.Error())
+		}
 		response.OkWithData(c, gin.H{
 			"username": user.Username,
 			"email":    user.Email,

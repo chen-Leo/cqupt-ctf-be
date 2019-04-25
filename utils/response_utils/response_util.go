@@ -38,3 +38,19 @@ func UsernameExist(c *gin.Context) {
 		"time":    time.Now(),
 	})
 }
+
+func FlagErr(c *gin.Context){
+	c.JSON(http.StatusOK, gin.H{
+		"status":  10021,
+		"message": "flag error",
+		"time":    time.Now(),
+	})
+}
+
+func AuthErr(c *gin.Context){
+	c.JSON(http.StatusOK, gin.H{
+		"status":  10031,
+		"message": "not login",
+		"time":    time.Now(),
+	})
+}
