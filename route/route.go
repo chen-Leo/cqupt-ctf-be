@@ -19,6 +19,8 @@ func init() {
 }
 
 func SetupRoute() *gin.Engine {
+	route.Use(middleware.CORS)
+
 	route.POST("/login", controller.Login)
 	route.POST("/signup", controller.SignUp)
 

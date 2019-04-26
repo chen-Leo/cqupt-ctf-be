@@ -43,7 +43,7 @@ func (u *User) FindRank() (solved uint, submitted uint, score uint) {
 	submitted= uint(len(submits))
 	for i := 0; i < len(submits); i++ {
 		s := submits[i]
-		if s.Soleved {
+		if s.Solved {
 			solved++
 			q:=Question{}
 			q.ID=s.QuestionId

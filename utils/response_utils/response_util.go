@@ -23,6 +23,15 @@ func OkWithData(c *gin.Context, data gin.H) {
 	})
 }
 
+func OkWithArray(c *gin.Context, data []gin.H) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":  10000,
+		"message": "success",
+		"time":    time.Now(),
+		"data":    data,
+	})
+}
+
 func Ok(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  10000,
@@ -46,6 +55,15 @@ func FlagErr(c *gin.Context){
 		"time":    time.Now(),
 	})
 }
+
+func IsSolved(c *gin.Context){
+	c.JSON(http.StatusOK, gin.H{
+		"status":  10022,
+		"message": "is solved",
+		"time":    time.Now(),
+	})
+}
+
 
 func AuthErr(c *gin.Context){
 	c.JSON(http.StatusOK, gin.H{
