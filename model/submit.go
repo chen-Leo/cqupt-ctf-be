@@ -8,7 +8,7 @@ type Submit struct {
 	gorm.Model
 	Uid        uint
 	QuestionId uint
-	Solved    bool
+	Solved     bool
 }
 
 func (s *Submit) Submit(flag string) (accept uint8) {

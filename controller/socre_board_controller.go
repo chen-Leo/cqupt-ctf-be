@@ -3,8 +3,9 @@ package controller
 import (
 	"cqupt-ctf-be/model"
 	response "cqupt-ctf-be/utils/response_utils"
-	"github.com/gin-gonic/gin"
 	"sort"
+
+	"github.com/gin-gonic/gin"
 )
 
 type RankEntity struct {
@@ -44,8 +45,8 @@ func ScoreBoard(c *gin.Context) {
 			Score:     score,
 			Solved:    solved,
 			Submitted: submitted}
-		rank[i]=r
-		}
+		rank[i] = r
+	}
 	sort.Sort(rank)
-	response.OkWithData(c,gin.H{"rank":rank})
+	response.OkWithData(c, gin.H{"rank": rank})
 }

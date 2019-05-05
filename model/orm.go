@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 )
@@ -9,7 +10,9 @@ import (
 var db *gorm.DB
 
 func init() {
-	d, err := gorm.Open("mysql", "root:123456@/ctf?charset=utf8&parseTime=True&loc=Local")
+	d, err := gorm.Open("mysql", "root:123456@(localhost:3306)/ctf?charset=utf8&parseTime=True&loc=Local")
+	//d, err := gorm.Open("mysql", "root:zxc981201@tcp(127.0.0.1:3306)/ctf?charset=utf8&parseTime=True&loc=Local")
+
 	if err != nil {
 		fmt.Println(err.Error())
 	}

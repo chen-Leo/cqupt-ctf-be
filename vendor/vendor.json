@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "blOHP3HPYU+IeV6yWCalQuuM+zE=",
+			"path": "github.com/dgrijalva/jwt-go",
+			"revision": "3af4c746e1c248ee8491a3e0c6f7a9cd831e95f8",
+			"revisionTime": "2018-09-21T17:23:15Z"
+		},
+		{
 			"checksumSHA1": "DKLBHtyjnaoUW/0w0amXnl6kTRE=",
 			"path": "github.com/gin-contrib/sessions",
 			"revision": "1532893d996f0fedbac1162ea1311ebfb57a3da5",
@@ -115,10 +121,6 @@
 			"path": "github.com/ugorji/go/codec",
 			"revision": "1d65431a5776db967ae5481e33b789f9ffcea0ec",
 			"revisionTime": "2019-04-21T13:46:00Z"
-		},
-		{
-			"path": "golang.org/x/sys/unix",
-			"revision": ""
 		},
 		{
 			"path": "google.golang.org/appengine/cloudsql",

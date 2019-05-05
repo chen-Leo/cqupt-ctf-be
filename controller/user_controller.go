@@ -2,13 +2,14 @@ package controller
 
 import (
 	"cqupt-ctf-be/model"
+	"cqupt-ctf-be/utils/jwt_utils"
 	response "cqupt-ctf-be/utils/response_utils"
 	secret "cqupt-ctf-be/utils/secret_utils"
 	"fmt"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 type loginUser struct {
@@ -32,17 +33,16 @@ func Login(c *gin.Context) {
 	secret.ToSha256(&user.Password)
 	err = user.FindByUsernameAndPassword()
 	if err == nil {
-		session := sessions.Default(c)
-		session.Set("uid", user.ID)
-		err=session.Save()
-		if err!=nil {
-			fmt.Println(err.Error())
+		token, jwtErr := jwt_utils.GenerateToken(user.ID)
+		if jwtErr != nil {
+			response.ParamError(c)
+			return
 		}
 		response.OkWithData(c, gin.H{
 			"username": user.Username,
 			"email":    user.Email,
 			"motto":    user.Motto,
-		})
+			"jwt":      token})
 		return
 	}
 	c.JSON(http.StatusBadRequest, gin.H{
@@ -67,22 +67,19 @@ func SignUp(c *gin.Context) {
 	secret.ToSha256(&user.Password)
 	err = user.InsertNew()
 	if err == nil {
-		s := sessions.Default(c)
-		s.Set("uid", user.ID)
-		err=s.Save()
-		if err!=nil {
-			fmt.Println(err.Error())
+		token, jwtErr := jwt_utils.GenerateToken(user.ID)
+		if jwtErr != nil {
+			response.ParamError(c)
+			return
 		}
 		response.OkWithData(c, gin.H{
 			"username": user.Username,
 			"email":    user.Email,
 			"motto":    user.Motto,
-		})
-		return
+			"jwt":      token})
 	} else {
 		if strings.Contains(err.Error(), "1062") {
 			response.UsernameExist(c)
-			return
 		}
 	}
 	response.ParamError(c)

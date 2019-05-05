@@ -15,7 +15,6 @@ func init() {
 	route = gin.Default()
 	store := cookie.NewStore([]byte("SessionId"))
 	route.Use(sessions.Sessions("session", store))
-
 }
 
 func SetupRoute() *gin.Engine {

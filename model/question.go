@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -40,8 +41,7 @@ func (q *Question) FindAll(uid uint) (res map[string][]*Question) {
 }
 
 func (q *Question) FindSolved(uid uint) {
-	fmt.Println(q.ID,uid)
-	notFound := db.Model(&Submit{}).Where("question_id = ?", q.ID).Where("solved = 1").Where("uid = ?",uid).First(&Submit{}).RecordNotFound()
+	notFound := db.Model(&Submit{}).Where("question_id = ?", q.ID).Where("solved = 1").Where("uid = ?", uid).First(&Submit{}).RecordNotFound()
 	if !notFound {
 		(*q).Solve = "pass"
 	}

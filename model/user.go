@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+
 	"github.com/jinzhu/gorm"
 )
 
@@ -12,8 +13,6 @@ type User struct {
 	Email    string
 	Motto    string
 }
-
-
 
 func (u *User) FindByUsernameAndPassword() error {
 	err := db.Where(u).First(&u)
@@ -40,15 +39,15 @@ func (u *User) FindAll() (users []*User) {
 func (u *User) FindRank() (solved uint, submitted uint, score uint) {
 	var submits []Submit
 	db.Where("uid = ?", u.ID).Find(&submits)
-	submitted= uint(len(submits))
+	submitted = uint(len(submits))
 	for i := 0; i < len(submits); i++ {
 		s := submits[i]
 		if s.Solved {
 			solved++
-			q:=Question{}
-			q.ID=s.QuestionId
+			q := Question{}
+			q.ID = s.QuestionId
 			db.Where(q).Find(&q)
-			score+=q.Score
+			score += q.Score
 		}
 	}
 	return

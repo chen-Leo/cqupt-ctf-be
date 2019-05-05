@@ -4,27 +4,22 @@ import (
 	"cqupt-ctf-be/model"
 	response "cqupt-ctf-be/utils/response_utils"
 	"fmt"
-	"github.com/gin-contrib/sessions"
+
 	"github.com/gin-gonic/gin"
 )
 
+//SubmitFlag 提交的flag后端的接收格式
 type SubmitFlag struct {
-	QuestionId uint   `json:"questionId" binding:"required"`
+	QuestionID uint   `json:"questionId" binding:"required"`
 	Flag       string `json:"flag" binding:"required"`
 }
 
+//Question 获得全部问题 并根据uid给出是否已解决
 func Question(c *gin.Context) {
 	var questions map[string][]*model.Question
 	q := model.Question{}
-	s := sessions.Default(c)
-	uidInterface := s.Get("uid")
-	//TODO:测试
-	var uid uint
-	if uidInterface == nil {
-		uid = 1
-	} else {
-		uid = uint(uidInterface.(int))
-	}
+	uidInterface, _ := c.Get("uid")
+	uid := uidInterface.(uint)
 	questions = q.FindAll(uid)
 	res := make([]gin.H, len(questions))
 	i := 0
@@ -45,18 +40,12 @@ func Submit(c *gin.Context) {
 		response.ParamError(c)
 		return
 	}
-	session := sessions.Default(c)
-	uidInterface := session.Get("uid")
-	//TODO:测试
-	var uid uint
-	if uidInterface == nil {
-		uid = 1
-	} else {
-		uid = uint(uidInterface.(int))
-	}
+	uidInterface, _ := c.Get("uid")
+	uid := uidInterface.(uint)
+
 	s := &model.Submit{
 		Uid:        uid,
-		QuestionId: f.QuestionId,
+		QuestionId: f.QuestionID,
 	}
 	fmt.Println(s.Uid)
 	accept := s.Submit(f.Flag)
