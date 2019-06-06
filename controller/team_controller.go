@@ -4,11 +4,9 @@ package controller
 
 import (
 	"cqupt-ctf-be/model"
-	"cqupt-ctf-be/utils/jwt_utils"
 	response "cqupt-ctf-be/utils/response_utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"strings"
 )
 
 //队伍成员对应表
@@ -50,26 +48,26 @@ type TeamMessageAll struct {
 }
 
 
-//获取用户的队伍信息并判断当前用户是否是leader
+//获当前用户的队伍信息并判断当前用户是否是leader
 func GetTeamMessage(c *gin.Context) {
-	var isLeader int
+	var isLeader int             //是否是队长 （1->是，-1->不是)
+	var applicationUsers []string //申请该队的用户名切片
+
 	//获取当前用户的id
-	jwtStr := c.GetHeader("Authorization")
-	jwtStr = strings.Replace(jwtStr, "Bearer ", "", 7)
-	u, err := jwt_utils.ParseToken(jwtStr)
-	if err != nil {
-		response.ParamError(c)
-		return
-	}
+	uidInterface, _ := c.Get("uid")
+	uid := uidInterface.(uint)
+
 	//根据用户的id查询用户所在的team,和其个人身份
-	roleTeam := model.RoleTeam{Uid: u.Uid}
+	roleTeam := model.RoleTeam{Uid: uid}
 	roleTeam.RoleAffirm()
 	roleId, teamId := roleTeam.RoleId, roleTeam.TeamId
-	//team == 0 无队伍 ..返回空
+
+	//team == 0 无队伍返回空
 	if teamId == 0 {
-		response.OkWithData(c, gin.H{})
+		response.OkWithData(c,gin.H{"team":""})
 		return
 	}
+
 	//确认是否是队长
 	switch {
 	case roleId == 2:
@@ -77,20 +75,21 @@ func GetTeamMessage(c *gin.Context) {
 	case roleId == 1:
 		isLeader = -1
 	}
+
 	//查找用户team的队长姓名
 	leaderName, _ := roleTeam.GetLeaderId()
 	fmt.Println(leaderName)
 	//获取该用户所在队伍的信息
 	team := model.Team{}
 	team.FindByTeamId(teamId)
+
 	//获取申请该队的用户切片
-	var applicationUsers []string
 	teamApplication := model.TeamApplication{TeamId: teamId}
 	userApplication := teamApplication.FindNameByTeamId()
 	for i := 0; i < len(userApplication); i++ {
 		applicationUsers = append(applicationUsers, userApplication[i].Username)
 	}
-	fmt.Println(applicationUsers)
+
 	//封装数据
 	teamMessageAll := TeamMessageAll{
 		Name:             team.Name,
@@ -104,6 +103,9 @@ func GetTeamMessage(c *gin.Context) {
 	response.OkWithData(c, gin.H{"team": teamMessageAll})
 }
 
+
+
+
 //申请加入新队伍(添加新的加入队伍申请表)
 func AddNewTeam(c *gin.Context) {
 	var add RoleTeam
@@ -112,19 +114,15 @@ func AddNewTeam(c *gin.Context) {
 		response.ParamError(c)
 		return
 	}
-	//获取当前用户的id
-	jwtStr := c.GetHeader("Authorization")
-	jwtStr = strings.Replace(jwtStr, "Bearer ", "", 7)
-	u, err := jwt_utils.ParseToken(jwtStr)
-	if err != nil {
-		response.ParamError(c)
-		return
-	}
+	//获取用户uid
+	uidInterface, _ := c.Get("uid")
+	uid := uidInterface.(uint)
+	//构建新的队伍申请表
+	application := model.TeamApplication{Uid: uid, TeamId: add.TeamId}
+	roleTeam := model.RoleTeam{Uid:application.Uid}
 
-	application := model.TeamApplication{Uid: u.Uid, TeamId: add.TeamId} //构建新的队伍申请表
-	roleTeam := model.RoleTeam{}
-	//判断是否加入或创建过其他队伍
-	if roleTeam.IsAlone(u.Uid) {
+	//根据Uid判断是否加入或创建过其他队伍
+	if roleTeam.IsAlone() {
 		response.TeamRoleErr(c)
 		return
 	}
@@ -155,47 +153,47 @@ func CreateNewTeam(c *gin.Context) {
 		response.ParamError(c)
 		return
 	}
-	jwtStr := c.GetHeader("Authorization")
-	jwtStr = strings.Replace(jwtStr, "Bearer ", "", 7)
-	u, err := jwt_utils.ParseToken(jwtStr)
-	if err != nil {
-		response.ParamError(c)
-		return
-	}
+	//获取用户uid
+	uidInterface, _ := c.Get("uid")
+	uid := uidInterface.(uint)
 	//创建新的队伍表(默认允许其他申请加入)
 	newTeam := model.Team{Name: createTeam.Name, Score: 0, Application: 1}
+	//构建新的team_role表（以队长身份) 这里暂时无teamId
+	roleTeam := model.RoleTeam{Uid: uid , RoleId: 2}
+
+	//根据Uid判断是否加入或创建过其他队伍
+	if roleTeam.IsAlone() {
+		response.TeamRoleErr(c)
+		return
+	}
+	//插入一张新的队伍表,无错误返回teamId
 	teamId, err := newTeam.InsertNew()
 	if err != nil {
 		response.TeamNameExist(c)
 		return
 	}
-	//构建新的team_role表（以队长身份)
-	roleTeam := model.RoleTeam{Uid: u.Uid, TeamId: teamId, RoleId: 2}
-	//判断是否加入或创建过其他队伍
-	if roleTeam.IsAlone(roleTeam.Uid) {
-		response.TeamRoleErr(c)
-		return
-	}
+
+	//加入teamId
+	roleTeam.TeamId=teamId
 	//插入新的成员信息表
 	err = roleTeam.InsertNew()
 	if err == nil {
 		response.Ok(c)
 		return
 	}
+
+	_ = newTeam.Delete(newTeam.ID)
 	response.ParamError(c)
 }
 
 //退出或解散该队伍
 func ExitTeam(c *gin.Context) {
-	//获取当前用户的id
-	jwtStr := c.GetHeader("Authorization")
-	jwtStr = strings.Replace(jwtStr, "Bearer ", "", 7)
-	u, err := jwt_utils.ParseToken(jwtStr)
-	if err != nil {
-		response.ParamError(c)
-		return
-	}
-	roleTeam := model.RoleTeam{Uid: u.Uid}
+
+	//获取用户uid
+	uidInterface, _ := c.Get("uid")
+	uid := uidInterface.(uint)
+
+	roleTeam := model.RoleTeam{Uid: uid}
 	roleTeam.RoleAffirm()
 	if roleTeam.TeamId == 0 {
 		response.NotJoinTeamError(c)
@@ -219,7 +217,7 @@ func ExitTeam(c *gin.Context) {
 		}
 	}
 	//不是队长，退队，删掉该成员自己的队伍成员信息表
-	err = roleTeam.DeleteByUid()
+	err := roleTeam.DeleteByUid()
 	if err == nil {
 		response.Ok(c)
 		return
@@ -235,23 +233,19 @@ func AgreeAdd(c *gin.Context) {
 		response.ParamError(c)
 		return
 	}
-	//拿到当前用户的id
-	jwtStr := c.GetHeader("Authorization")
-	jwtStr = strings.Replace(jwtStr, "Bearer ", "", 7)
-	u, err := jwt_utils.ParseToken(jwtStr)
-	if err != nil {
-		response.ParamError(c)
-		return
-	}
+	//获取用户uid
+	uidInterface, _ := c.Get("uid")
+	uid := uidInterface.(uint)
 
-	roleTeam := model.RoleTeam{Uid: u.Uid}
+	roleTeam := model.RoleTeam{Uid: uid}
 	roleTeam.RoleAffirm()
 	roleId, teamId := roleTeam.RoleId, roleTeam.TeamId
+
     user := model.User{Username:teamApplication.NewUserName}
     user.GetUserMessageByUsername()
-	application := model.TeamApplication{Uid: u.Uid}
-	application.GetApplicationByUid()
 
+	application := model.TeamApplication{Uid: uid}
+	application.GetApplicationByUid()
 
 	//判断是否加入的本队（恶意构造表单)
 	if teamId != application.TeamId {
@@ -300,15 +294,11 @@ func KickPeople(c *gin.Context) {
 		response.ParamError(c)
 		return
 	}
-	//拿到当前用户的id
-	jwtStr := c.GetHeader("Authorization")
-	jwtStr = strings.Replace(jwtStr, "Bearer ", "", 7)
-	u, err := jwt_utils.ParseToken(jwtStr)
-	if err != nil {
-		response.ParamError(c)
-		return
-	}
-	nowRoleTeam := model.RoleTeam{Uid: u.Uid}
+	//获取用户uid
+	uidInterface, _ := c.Get("uid")
+	uid := uidInterface.(uint)
+
+	nowRoleTeam := model.RoleTeam{Uid: uid}
 	//判断是否是队长
 	if nowRoleTeam.IsLeader(){
 		kickRoleTeam  := model.RoleTeam{Uid:kickuid.PoorUid}
@@ -326,21 +316,18 @@ func KickPeople(c *gin.Context) {
 
 //队伍是否同意申请状态修改
 func ApplicationChange(c *gin.Context) {
-	//拿到当前用户的id
-	jwtStr := c.GetHeader("Authorization")
-	jwtStr = strings.Replace(jwtStr, "Bearer ", "", 7)
-	u, err := jwt_utils.ParseToken(jwtStr)
-	if err != nil {
-		response.ParamError(c)
-		return
-	}
-	nowRoleTeam := model.RoleTeam{Uid: u.Uid}
+	//获取用户uid
+	uidInterface, _ := c.Get("uid")
+	uid := uidInterface.(uint)
+
+	nowRoleTeam := model.RoleTeam{Uid: uid}
 	nowRoleTeam.RoleAffirm()
 	nowRoleId,teamId := nowRoleTeam.RoleId,nowRoleTeam.TeamId
+
 	//判断是否是队长
 	if nowRoleId == 2 {
 		applicationChangeTeamTable  := model.Team{}
-		err :=applicationChangeTeamTable.ApplicationChange(teamId)
+		err := applicationChangeTeamTable.ApplicationChange(teamId)
 		if err != nil{
 			response.ParamError(c)
 			return
@@ -362,24 +349,24 @@ func TeamMessageChange(c *gin.Context) {
 		response.ParamError(c)
 		return
 	}
-	//拿到当前用户的id
-	jwtStr := c.GetHeader("Authorization")
-	jwtStr = strings.Replace(jwtStr, "Bearer ", "", 7)
-	u, err := jwt_utils.ParseToken(jwtStr)
-	if err != nil {
-		response.ParamError(c)
-		return
-	}
-	nowRoleTeam := model.RoleTeam{Uid: u.Uid}
+	//获取用户uid
+	uidInterface, _ := c.Get("uid")
+	uid := uidInterface.(uint)
+
+	nowRoleTeam := model.RoleTeam{Uid: uid}
 	nowRoleTeam.RoleAffirm()
 	nowRoleId,teamId := nowRoleTeam.RoleId,nowRoleTeam.TeamId
+
 	//判断是否是队长
 	if nowRoleId == 2 {
+		//获取team原信息
         team := model.Team{}
         team.FindByTeamId(teamId)
+        //更新数据
         team.Name = newTeamMessage.Name
         team.Application =newTeamMessage.Application
         team.Introduction =newTeamMessage.Introduction
+
         err := team.TeamMessageChange()
         if err!= nil {
         	response.ParamError(c)
@@ -390,4 +377,16 @@ func TeamMessageChange(c *gin.Context) {
 	}
 	//不是队长，权限不足
 	response.PermissionError(c)
+}
+
+
+
+
+func GetTeamMessageByTeamName (c* gin.Context){
+
+
+
+
+
+
 }

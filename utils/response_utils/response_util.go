@@ -142,3 +142,11 @@ func NotYourTeamApplicationError(c *gin.Context) {
 		"time":    time.Now(),
 	})
 }
+
+func RedisError(c *gin.Context) {
+	c.JSON(http.StatusBadRequest, gin.H{
+		"status":  10051,
+		"message": "redis error",
+		"time":    time.Now(),
+	})
+}

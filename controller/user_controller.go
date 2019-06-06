@@ -53,6 +53,8 @@ func Login(c *gin.Context) {
 
 		roleTeam := model.RoleTeam{Uid:user.ID}
 		roleTeam.RoleAffirm()
+		team := model.Team{}
+		team.FindByTeamId(roleTeam.TeamId)
 
 		token, jwtErr := jwt_utils.GenerateToken(user.ID)
 		if jwtErr != nil {
@@ -60,7 +62,7 @@ func Login(c *gin.Context) {
 			return
 		}
 		response.OkWithData(c, gin.H{
-			"teamid"  : roleTeam.TeamId,
+			"teamname": team.Name,
 			"username": user.Username,
 			"email":    user.Email,
 			"motto":    user.Motto,
@@ -95,7 +97,7 @@ func SignUp(c *gin.Context) {
 			return
 		}
 		response.OkWithData(c, gin.H{
-			"teamid"  :0,
+			"teamname": "",
 			"username": user.Username,
 			"email":    user.Email,
 			"motto":    user.Motto,
@@ -119,17 +121,16 @@ func PasswordChange(c *gin.Context) {
 		response.ParamError(c)
 		return
 	 }
-	jwtStr := c.GetHeader("Authorization")
-	jwtStr = strings.Replace(jwtStr, "Bearer ", "", 7)
-	u, err := jwt_utils.ParseToken(jwtStr)
-	if err != nil {
-		response.ParamError(c)
-		return
-	}
+	 //获取用户id
+	uidInterface, _ := c.Get("uid")
+	uid := uidInterface.(uint)
+
+
 	user := model.User{}
-	user.GetUserMessageByUid(u.Uid)
+	user.GetUserMessageByUid(uid)
 	secret.ToSha256(&changePassword.OldPassword)
 	secret.ToSha256(&changePassword.NewPassword)
+
 	if user.Password == changePassword.OldPassword {
 		user.Password = changePassword.NewPassword
 		err := user.UserMessageChange()
@@ -153,15 +154,12 @@ func UserMessageChange(c *gin.Context) {
 		response.ParamError(c)
 		return
 	}
-	jwtStr := c.GetHeader("Authorization")
-	jwtStr = strings.Replace(jwtStr, "Bearer ", "", 7)
-	u, err := jwt_utils.ParseToken(jwtStr)
-	if err != nil {
-		response.ParamError(c)
-		return
-	}
+	//获取用户uid
+	uidInterface, _ := c.Get("uid")
+	uid := uidInterface.(uint)
+
 	user := model.User{}
-	user.GetUserMessageByUid(u.Uid)
+	user.GetUserMessageByUid(uid)
 	secret.ToSha256(&changeUserMessage.OldPassword)
 	secret.ToSha256(&changeUserMessage.NewPassword)
 	if user.Password != changeUserMessage.OldPassword {
@@ -184,6 +182,7 @@ func UserMessageChange(c *gin.Context) {
 }
 
 
+//通过用户名获得用户信息
 func UserMessageGet(c *gin.Context) {
 	var getUserMessage GetUserMessage
 	err := c.ShouldBindJSON(&getUserMessage)

@@ -24,28 +24,28 @@ func SetupRoute() *gin.Engine {
 	route.POST("/login", controller.Login)
 	route.POST("/signup", controller.SignUp)
 
-	route.POST("/team/create",controller.CreateNewTeam)
-	route.POST("/team/add",controller.AddNewTeam)
-	route.DELETE("/team/exite",controller.ExitTeam)
-	route.DELETE("/team/break",controller.ExitTeam)
-	route.POST("/team/agreeadd",controller.AgreeAdd)
-
-    route.DELETE("/team/kickpeople",controller.KickPeople)
-	route.GET("/team/getmessage",controller.GetTeamMessage)
-	route.POST("/team/changemessage",controller.TeamMessageChange)
-
-	route.POST("/user/getmessage",controller.UserMessageGet)
-	route.POST("/user/changepassword",controller.PasswordChange)
-	route.POST("/user/changemessage",controller.UserMessageChange)
-
-
 	g:=route.Group("")
 	g.Use(middleware.Auth)
 
 	g.GET("/questions", controller.Question)
 	g.POST("/submit",controller.Submit)
 	g.GET("/rank",controller.ScoreBoard)
+    g.POST("/test",controller.Post)
 
+	g.POST("/team/create",controller.CreateNewTeam)
+	g.POST("/team/add",controller.AddNewTeam)
+	g.DELETE("/team/exite",controller.ExitTeam)
+	g.DELETE("/team/break",controller.ExitTeam)
+	g.POST("/team/agreeadd",controller.AgreeAdd)
 
+	g.DELETE("/team/kickpeople",controller.KickPeople)
+	g.GET("/team/getmessage",controller.GetTeamMessage)
+	g.POST("/team/changemessage",controller.TeamMessageChange)
+
+	g.POST("/user/getmessage",controller.UserMessageGet)
+	g.POST("/user/changemessage",controller.UserMessageChange)
+	g.POST("/user/changepassword",controller.PasswordChange)
+
+	g.POST("/news/get",controller.GetNews)
 	return route
 }

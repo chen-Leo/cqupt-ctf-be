@@ -30,8 +30,8 @@ func (roleTeam *RoleTeam) InsertNew() error{
 }
 
 //查询角色是否加入过其他队伍
-func (roleTeam *RoleTeam) IsAlone(Uid uint) bool {
-	db.Where("uid = ? ",Uid).First(&roleTeam)
+func (roleTeam *RoleTeam) IsAlone() bool {
+	db.Where("uid = ? ",roleTeam.Uid).First(&roleTeam)
 	if roleTeam.TeamId  == 0 {
 		return  false
 	}
