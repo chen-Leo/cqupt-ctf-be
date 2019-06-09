@@ -23,21 +23,20 @@ type signUpUser struct {
 }
 
 type GetUserMessage struct {
-	Username string`json:"username" binding:"required"`
+	Username string `json:"username" binding:"required"`
 }
 
 type ChangePassword struct {
-	OldPassword  string  `json:"oldpassword" binding:"required"`
-	NewPassword  string  `json:"newpassword" binding:"required"`
+	OldPassword string `json:"oldpassword" binding:"required"`
+	NewPassword string `json:"newpassword" binding:"required"`
 }
 
 type ChangeUserMessage struct {
-	Name  string         `json:"name"`
-	OldPassword  string  `json:"oldpassword"`
-	NewPassword  string  `json:"newpassword"`
-	Email      string    `json:"email"`
+	Name        string `json:"name"`
+	OldPassword string `json:"oldpassword"`
+	NewPassword string `json:"newpassword"`
+	Email       string `json:"email"`
 }
-
 
 func Login(c *gin.Context) {
 	var login loginUser
@@ -51,7 +50,7 @@ func Login(c *gin.Context) {
 	err = user.FindByUsernameAndPassword()
 	if err == nil {
 
-		roleTeam := model.RoleTeam{Uid:user.ID}
+		roleTeam := model.RoleTeam{Uid: user.ID}
 		roleTeam.RoleAffirm()
 		team := model.Team{}
 		team.FindByTeamId(roleTeam.TeamId)
@@ -115,16 +114,15 @@ func SignUp(c *gin.Context) {
 //修改密码
 //create by sao
 func PasswordChange(c *gin.Context) {
-	 var changePassword ChangePassword
-	 err := c.ShouldBindJSON(&changePassword)
-	 if err != nil {
+	var changePassword ChangePassword
+	err := c.ShouldBindJSON(&changePassword)
+	if err != nil {
 		response.ParamError(c)
 		return
-	 }
-	 //获取用户id
+	}
+	//获取用户id
 	uidInterface, _ := c.Get("uid")
 	uid := uidInterface.(uint)
-
 
 	user := model.User{}
 	user.GetUserMessageByUid(uid)
@@ -134,16 +132,16 @@ func PasswordChange(c *gin.Context) {
 	if user.Password == changePassword.OldPassword {
 		user.Password = changePassword.NewPassword
 		err := user.UserMessageChange()
-			if err != nil {
-				response.UsernameOrEmailExist(c)
-				return
-			}
+		if err != nil {
+			response.UsernameOrEmailExist(c)
+			return
+		}
 		response.Ok(c)
 		return
-		}
+	}
 	response.PasswordError(c)
 
-	}
+}
 
 //用户信息修改
 //create by sao
@@ -168,9 +166,9 @@ func UserMessageChange(c *gin.Context) {
 	}
 	user.Password = changeUserMessage.NewPassword
 	if changeUserMessage.Name != "" {
-	user.Username = changeUserMessage.Name
-    }
-	if changeUserMessage.Email != ""{
+		user.Username = changeUserMessage.Name
+	}
+	if changeUserMessage.Email != "" {
 		user.Email = changeUserMessage.Email
 	}
 	err = user.UserMessageChange()
@@ -178,9 +176,8 @@ func UserMessageChange(c *gin.Context) {
 		response.UsernameOrEmailExist(c)
 		return
 	}
-    response.Ok(c)
+	response.Ok(c)
 }
-
 
 //通过用户名获得用户信息
 func UserMessageGet(c *gin.Context) {
@@ -190,24 +187,18 @@ func UserMessageGet(c *gin.Context) {
 		response.ParamError(c)
 		return
 	}
-	user := model.User{Username:getUserMessage.Username}
+	user := model.User{Username: getUserMessage.Username}
 	user.GetUserMessageByUsername()
 	if user.ID != 0 {
-		roleTeam := model.RoleTeam{Uid:user.ID}
+		roleTeam := model.RoleTeam{Uid: user.ID}
 		roleTeam.RoleAffirm()
 		response.OkWithData(c, gin.H{
-			"teamid"  : roleTeam.TeamId,
+			"teamid":   roleTeam.TeamId,
 			"username": user.Username,
 			"email":    user.Email,
 			"motto":    user.Motto,
 		})
 		return
 	}
-	response.OkWithData(c,gin.H{})
+	response.OkWithData(c, gin.H{})
 }
-
-
-
-
-
-

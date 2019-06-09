@@ -11,7 +11,7 @@ import (
 var db *gorm.DB
 
 func init() {
-	d, err := gorm.Open("mysql", "root:0405duanQWER789@/ctf?charset=utf8mb4&parseTime=True&loc=Local")
+	d, err := gorm.Open("pjsql", "root:@/ctf?charset=utf8mb4&parseTime=True&loc=Local")
 	//d, err := gorm.Open("mysql", "root:zxc981201@tcp(127.0.0.1:3306)/ctf?charset=utf8&parseTime=True&loc=Local")
 
 	if err != nil {

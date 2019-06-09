@@ -47,6 +47,7 @@ func UsernameOrEmailExist(c *gin.Context) {
 		"time":    time.Now(),
 	})
 }
+
 //
 func PasswordError(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
@@ -56,7 +57,7 @@ func PasswordError(c *gin.Context) {
 	})
 }
 
-func FlagErr(c *gin.Context){
+func FlagErr(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  10021,
 		"message": "flag error",
@@ -64,7 +65,7 @@ func FlagErr(c *gin.Context){
 	})
 }
 
-func IsSolved(c *gin.Context){
+func IsSolved(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  10022,
 		"message": "is solved",
@@ -72,7 +73,7 @@ func IsSolved(c *gin.Context){
 	})
 }
 
-func AuthErr(c *gin.Context){
+func AuthErr(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  10031,
 		"message": "not login",
@@ -82,13 +83,14 @@ func AuthErr(c *gin.Context){
 
 //加入或创建新队伍前不允许必须以前是单身
 //create by sao
-func TeamRoleErr(c *gin.Context){
+func TeamRoleErr(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  10041,
 		"message": "error,you already join a team, you can not join or create other team",
 		"time":    time.Now(),
 	})
 }
+
 //队伍名已存在
 //create by sao
 func TeamNameExist(c *gin.Context) {
@@ -98,6 +100,7 @@ func TeamNameExist(c *gin.Context) {
 		"time":    time.Now(),
 	})
 }
+
 //你不是队长，权限不足
 //create by sao
 func PermissionError(c *gin.Context) {
@@ -107,6 +110,7 @@ func PermissionError(c *gin.Context) {
 		"time":    time.Now(),
 	})
 }
+
 //队伍未开放加入申请
 //create by sao
 func ApplicationError(c *gin.Context) {
@@ -133,7 +137,6 @@ func ApplicationAlreadyError(c *gin.Context) {
 	})
 }
 
-
 //create by sao
 func NotYourTeamApplicationError(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
@@ -147,6 +150,14 @@ func RedisError(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"status":  10051,
 		"message": "redis error",
+		"time":    time.Now(),
+	})
+}
+
+func MessageError(c *gin.Context) {
+	c.JSON(http.StatusBadRequest, gin.H{
+		"status":  10061,
+		"message": "leave message error,the message doesn't exist.",
 		"time":    time.Now(),
 	})
 }

@@ -24,28 +24,33 @@ func SetupRoute() *gin.Engine {
 	route.POST("/login", controller.Login)
 	route.POST("/signup", controller.SignUp)
 
-	g:=route.Group("")
+	g := route.Group("")
 	g.Use(middleware.Auth)
 
 	g.GET("/questions", controller.Question)
-	g.POST("/submit",controller.Submit)
-	g.GET("/rank",controller.ScoreBoard)
-    g.POST("/test",controller.Post)
+	g.POST("/submit", controller.Submit)
+	g.GET("/rank", controller.ScoreBoard)
 
-	g.POST("/team/create",controller.CreateNewTeam)
-	g.POST("/team/add",controller.AddNewTeam)
-	g.DELETE("/team/exite",controller.ExitTeam)
-	g.DELETE("/team/break",controller.ExitTeam)
-	g.POST("/team/agreeadd",controller.AgreeAdd)
+	g.POST("/team/create", controller.CreateNewTeam)
+	g.POST("/team/add", controller.AddNewTeam)
+	g.GET("/team/getmessage", controller.GetTeamMessage)
 
-	g.DELETE("/team/kickpeople",controller.KickPeople)
-	g.GET("/team/getmessage",controller.GetTeamMessage)
-	g.POST("/team/changemessage",controller.TeamMessageChange)
+	g.DELETE("/team/exite", controller.ExitTeam) //退出队伍
+	g.DELETE("/team/break", controller.ExitTeam)
 
-	g.POST("/user/getmessage",controller.UserMessageGet)
-	g.POST("/user/changemessage",controller.UserMessageChange)
-	g.POST("/user/changepassword",controller.PasswordChange)
+	g.POST("/team/agreeadd", controller.AgreeAdd)
 
-	g.POST("/news/get",controller.GetNews)
+	g.DELETE("/team/kickpeople", controller.KickPeople)
+
+	g.POST("/team/changemessage", controller.TeamMessageChange)
+
+	g.POST("/user/getmessage", controller.UserMessageGet)
+	g.POST("/user/changemessage", controller.UserMessageChange)
+	g.POST("/user/changepassword", controller.PasswordChange)
+
+	g.GET("/news/get", controller.GetNewsbyPage)
+
+	g.GET("/messageform/get", controller.MessageFormAll)
+	g.POST("/messageform/add", controller.MessageFormAdd)
 	return route
 }

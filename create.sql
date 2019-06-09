@@ -1,134 +1,189 @@
--- MySQL dump 10.13  Distrib 5.7.21, for Win64 (x86_64)
---
--- Host: 127.0.0.1    Database: ctf
--- ------------------------------------------------------
--- Server version	5.7.21
+/*
+ Navicat Premium Data Transfer
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+ Source Server         : mysql
+ Source Server Type    : MySQL
+ Source Server Version : 80012
+ Source Host           : localhost:3306
+ Source Schema         : ctf
 
---
--- Table structure for table `question`
---
+ Target Server Type    : MySQL
+ Target Server Version : 80012
+ File Encoding         : 65001
 
+ Date: 09/06/2019 13:25:48
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for compete
+-- ----------------------------
+DROP TABLE IF EXISTS `compete`;
+CREATE TABLE `compete`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `introduction` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `created_at` timestamp(0) NULL DEFAULT NULL,
+  `updated_at` timestamp(0) NULL DEFAULT NULL,
+  `deleted_at` int(11) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for message_form
+-- ----------------------------
+DROP TABLE IF EXISTS `message_form`;
+CREATE TABLE `message_form`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `pid` int(11) NULL DEFAULT NULL,
+  `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `content` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `created_at` timestamp(0) NULL DEFAULT NULL,
+  `updated_at` timestamp(0) NULL DEFAULT NULL,
+  `deleted_at` int(11) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `FKusername_message_form_user`(`username`) USING BTREE,
+  CONSTRAINT `FKusername_message_form_user` FOREIGN KEY (`username`) REFERENCES `user` (`username`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for news
+-- ----------------------------
+DROP TABLE IF EXISTS `news`;
+CREATE TABLE `news`  (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `content` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `created_at` timestamp(0) NULL DEFAULT NULL,
+  `updated_at` timestamp(0) NULL DEFAULT NULL,
+  `deleted_at` int(11) NULL DEFAULT NULL,
+  `weight_time` timestamp(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for question
+-- ----------------------------
 DROP TABLE IF EXISTS `question`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `question` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
+CREATE TABLE `question`  (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `score` smallint(6) NOT NULL,
-  `content` text NOT NULL,
-  `flag` varchar(50) NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  `deleted_at` int(11) DEFAULT NULL,
-  `type_id` tinyint(4) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `question_id_uindex` (`id`),
-  UNIQUE KEY `question_name_uindex` (`name`),
-  UNIQUE KEY `question_flag_uindex` (`flag`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  `content` text CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `flag` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `created_at` timestamp(0) NULL DEFAULT NULL,
+  `updated_at` timestamp(0) NULL DEFAULT NULL,
+  `deleted_at` int(11) NULL DEFAULT NULL,
+  `type_id` tinyint(4) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `question_id_uindex`(`id`) USING BTREE,
+  UNIQUE INDEX `question_name_uindex`(`name`) USING BTREE,
+  UNIQUE INDEX `question_flag_uindex`(`flag`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
---
--- Dumping data for table `question`
---
-
-LOCK TABLES `question` WRITE;
-/*!40000 ALTER TABLE `question` DISABLE KEYS */;
-INSERT INTO `question` VALUES (1,'假Web题1',100,'这是一道假Web\r\nflag:0xFA{fake_web}','0xFA{fake_web}','2019-04-25 04:14:49','2019-04-25 04:15:01',NULL,1),(2,'假Pwn题2',100,'这是一道假Pwn\r\nflag:0xFA{fake_pwn}','0xFA{fake_pwn}','2019-04-25 04:15:43','2019-04-25 04:15:45',NULL,2),(3,'假Misc题3',100,'这是一道假Misc\r\nflag:0xFA{fake_misc}','0xFA{fake_Misc}','2019-04-25 04:17:07','2019-04-25 04:17:09',NULL,3);
-/*!40000 ALTER TABLE `question` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `question_type`
---
-
+-- ----------------------------
+-- Table structure for question_type
+-- ----------------------------
 DROP TABLE IF EXISTS `question_type`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `question_type` (
+CREATE TABLE `question_type`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(15) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `question_type_name_uindex` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
+  `name` varchar(15) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `question_type_name_uindex`(`name`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
---
--- Dumping data for table `question_type`
---
+-- ----------------------------
+-- Table structure for role_team
+-- ----------------------------
+DROP TABLE IF EXISTS `role_team`;
+CREATE TABLE `role_team`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` int(10) UNSIGNED NOT NULL,
+  `team_id` int(11) UNSIGNED NOT NULL,
+  `role_id` int(11) NULL DEFAULT NULL,
+  `created_at` timestamp(0) NULL DEFAULT NULL,
+  `updated_at` timestamp(0) NULL DEFAULT NULL,
+  `deleted_at` timestamp(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `FKuid_role_user`(`uid`) USING BTREE,
+  INDEX `FKtid_role_team`(`team_id`) USING BTREE,
+  CONSTRAINT `FKtid_role_team` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FKuid_role_user` FOREIGN KEY (`uid`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
-LOCK TABLES `question_type` WRITE;
-/*!40000 ALTER TABLE `question_type` DISABLE KEYS */;
-INSERT INTO `question_type` VALUES (3,'Misc'),(2,'Pwn'),(1,'Web');
-/*!40000 ALTER TABLE `question_type` ENABLE KEYS */;
-UNLOCK TABLES;
+-- ----------------------------
+-- Table structure for submit
+-- ----------------------------
+DROP TABLE IF EXISTS `submit`;
+CREATE TABLE `submit`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` int(10) UNSIGNED NOT NULL,
+  `question_id` int(11) UNSIGNED NOT NULL,
+  `solved` tinyint(1) NULL DEFAULT NULL,
+  `created_at` timestamp(0) NULL DEFAULT NULL,
+  `updated_at` timestamp(0) NULL DEFAULT NULL,
+  `deleted_at` timestamp(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `FKuid_sumbit_user`(`uid`) USING BTREE,
+  INDEX `FKuid_sumbit_question`(`question_id`) USING BTREE,
+  CONSTRAINT `FKuid_sumbit_question` FOREIGN KEY (`question_id`) REFERENCES `question` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FKuid_sumbit_user` FOREIGN KEY (`uid`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
---
--- Table structure for table `user`
---
+-- ----------------------------
+-- Table structure for team
+-- ----------------------------
+DROP TABLE IF EXISTS `team`;
+CREATE TABLE `team`  (
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `score` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `introduction` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'nothing to say',
+  `application` int(11) NULL DEFAULT 0,
+  `created_at` timestamp(0) NULL DEFAULT NULL,
+  `updated_at` timestamp(0) NULL DEFAULT NULL,
+  `deleted_at` timestamp(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `teamNameOnly`(`name`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
+-- ----------------------------
+-- Table structure for team_application
+-- ----------------------------
+DROP TABLE IF EXISTS `team_application`;
+CREATE TABLE `team_application`  (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` int(11) UNSIGNED ZEROFILL NULL DEFAULT NULL,
+  `team_id` int(11) UNSIGNED ZEROFILL NULL DEFAULT NULL,
+  `created_at` timestamp(0) NULL DEFAULT NULL,
+  `updated_at` timestamp(0) NULL DEFAULT NULL,
+  `deleted_at` timestamp(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `FKteamid_team_application_question`(`team_id`) USING BTREE,
+  INDEX `FKuid_team_application_question`(`uid`) USING BTREE,
+  CONSTRAINT `FKteamid_team_application_question` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FKuid_team_application_question` FOREIGN KEY (`uid`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for user
+-- ----------------------------
 DROP TABLE IF EXISTS `user`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `user` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `username` varchar(20) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `email` varchar(40) NOT NULL,
-  `motto` varchar(40) NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  `deleted_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `user_email_uindex` (`email`),
-  UNIQUE KEY `user_id_uindex` (`id`),
-  UNIQUE KEY `user_username_uindex` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4;
-/*!40101 SET character_set_client = @saved_cs_client */;
+CREATE TABLE `user`  (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `username` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `email` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `motto` varchar(40) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `created_at` timestamp(0) NULL DEFAULT NULL,
+  `updated_at` timestamp(0) NULL DEFAULT NULL,
+  `deleted_at` timestamp(0) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `user_email_uindex`(`email`) USING BTREE,
+  UNIQUE INDEX `user_id_uindex`(`id`) USING BTREE,
+  UNIQUE INDEX `user_username_uindex`(`username`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 14 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
---
--- Dumping data for table `user`
---
-
-LOCK TABLES `user` WRITE;
-/*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES (1,'MashiroC','zxczxc','mashiroc@outlook.com','','2019-04-25 11:40:53','2019-04-25 11:40:53',NULL);
-/*!40000 ALTER TABLE `user` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2019-04-25 20:24:36
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+SET FOREIGN_KEY_CHECKS = 1;

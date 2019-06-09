@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"github.com/gomodule/redigo/redis"
 )
+
 var RedisConn *redis.Pool
 
 type Redis struct {
-
 }
 
 func init() {
@@ -27,21 +27,20 @@ func init() {
 }
 
 //存入
-func (r *Redis)Set(key string, data interface{}, time int) error {
+func (r *Redis) Set(key string, data interface{}, time int) error {
 	conn := RedisConn.Get()
 	defer conn.Close()
 	value, err := json.Marshal(data)
+
 	if err != nil {
 		return err
 	}
-	_, err = conn.Do("SET", key, value, "EX",time)
-	//conn.Flush();
+	_, err = conn.Do("SET", key, value, "EX", time)
 	if err != nil {
 		return err
 	}
 	return err
 }
-
 
 //判断是否存在
 func (r *Redis) Exists(key string) bool {
@@ -55,11 +54,12 @@ func (r *Redis) Exists(key string) bool {
 }
 
 //取数据
-func(r *Redis) Get(key string) ([]byte, error) {
+func (r *Redis) Get(key string) ([]byte, error) {
 	conn := RedisConn.Get()
 	defer conn.Close()
 	reply, err := redis.Bytes(conn.Do("GET", key))
 	if err != nil {
+
 		return nil, err
 	}
 	return reply, nil

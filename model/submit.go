@@ -20,7 +20,7 @@ func (s *Submit) Submit(flag string) (accept uint8) {
 	isNotSolved := tx.Where("question_id = ?", q.ID).Where("solved = 1").Where("uid = ?", s.Uid).First(&Submit{}).RecordNotFound()
 
 	if isNotSolved {
-		tx.Create( &s)
+		tx.Create(&s)
 
 		flagFail := tx.Model(&q).Where("id = ?", q.ID).Where("flag = ?", flag).First(&q).RecordNotFound()
 

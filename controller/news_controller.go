@@ -5,58 +5,31 @@ import (
 	response "cqupt-ctf-be/utils/response_utils"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"math"
+	"strconv"
 )
 
 type NewsGet struct {
 	Page int `json:"page" binding:"required"`
 }
 
-//从数据库中找出所有的公告并存入redis返回前端第一页（5个)
-func GetNews(c *gin.Context) {
-
-	newsAllJson, totalLength, err := (&model.News{}).FindAll()
-	if err != nil {
-		response.RedisError(c)
-		return
-	}
-	res := make([]gin.H, totalLength)
-	if totalLength >= 5 {
-		for i := 0; i < 5; i++ {
-			res[i] = gin.H{
-				"content":      newsAllJson[i].Content,
-				"title":        newsAllJson[i].Title,
-				"number":       newsAllJson[i].Number,
-				"currentPage ": newsAllJson[i].CurrentPage,
-				"TotalPage":    newsAllJson[i].TotalPage,
-			}
-		}
-		response.OkWithArray(c, res)
-		return
-	}
-	for i := 0; i < totalLength; i++ {
-		res[i] = gin.H{
-			"content":      newsAllJson[i].Content,
-			"title":        newsAllJson[i].Title,
-			"number":       newsAllJson[i].Number,
-			"currentPage ": newsAllJson[i].CurrentPage,
-			"TotalPage":    newsAllJson[i].TotalPage,
-		}
-	}
-	response.OkWithArray(c, res)
-	return
-
-}
-
 func GetNewsbyPage(c *gin.Context) {
-	var newGet NewsGet
-	err := c.ShouldBindJSON(&newGet)
-	if err != nil || newGet.Page <= 0 {
+
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil {
 		response.ParamError(c)
 		return
 	}
 
 	var newsAllJson []model.NewsReturn
 	var totalLength int
+	var firstNum, lastNum, lastPage int
+
+	//当page为负数时，返回第一页的内容
+	if page <= 0 {
+		page = 1
+	}
+
 
 	//从redis取数据，没缓存从MySQL取
 	if !(&model.Redis{}).Exists("newsAll") {
@@ -66,35 +39,32 @@ func GetNewsbyPage(c *gin.Context) {
 			return
 		}
 	} else {
-		date, _ := (&model.Redis{}).Get("newsAll")
-		err = json.Unmarshal(date, newsAllJson)
-		if err != nil {
-			response.RedisError(c)
-			return
-		}
+		data, _ := (&model.Redis{}).Get("newsAll")
+		_ = json.Unmarshal(data, &newsAllJson)
 		totalLength = len(newsAllJson)
 	}
 
-	var firstNum, lastNum int
-
-	if totalLength/5 <= newGet.Page {
-		firstNum = (totalLength/5 - 1) * 5
+	lastPage = int(math.Ceil(float64(totalLength) / 5.0))
+	if lastPage <= page {
+		firstNum = (lastPage - 1) * 5
 		lastNum = totalLength
-	} else {
-		firstNum = (newGet.Page/5 - 1) * 5
-		lastNum = lastNum + 5
+	} else
+	{
+		firstNum = (page - 1) * 5
+		lastNum = firstNum + 5
 	}
-
-	res := make([]gin.H, 5)
-
+	res := make([]gin.H, lastNum-firstNum)
+	//封装返回数据
+	j := 0
 	for i := firstNum; i < lastNum; i++ {
-		res[i] = gin.H{
+		res[j] = gin.H{
 			"content":      newsAllJson[i].Content,
 			"title":        newsAllJson[i].Title,
 			"number":       newsAllJson[i].Number,
 			"currentPage ": newsAllJson[i].CurrentPage,
 			"TotalPage":    newsAllJson[i].TotalPage,
 		}
+		j++
 	}
 	response.OkWithArray(c, res)
 	return

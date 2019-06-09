@@ -54,22 +54,17 @@ func (u *User) FindRank() (solved uint, submitted uint, score uint) {
 }
 
 //根据uid返回用户user信息
-func (u *User) GetUserMessageByUid(uid uint) {
-   db.Where("id = ?",uid).First(&u)
+func (u *User) GetUserMessageByUid(uid uint) *User {
+	db.Where("id = ?", uid).First(&u)
+	return u
 }
 
 //更具username返回user信息
 func (u *User) GetUserMessageByUsername() {
-	db.Where("username = ?",u.Username).First(&u)
+	db.Where("username = ?", u.Username).First(&u)
 }
 
 func (u *User) UserMessageChange() error {
-	err  := db.Model(&u).Updates(u)
-    return err.Error
+	err := db.Model(&u).Updates(u)
+	return err.Error
 }
-
-
-
-
-
-
