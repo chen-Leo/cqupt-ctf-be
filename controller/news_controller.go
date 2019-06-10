@@ -13,7 +13,7 @@ type NewsGet struct {
 	Page int `json:"page" binding:"required"`
 }
 
-func GetNewsbyPage(c *gin.Context) {
+func NewsGetbyPage(c *gin.Context) {
 
 	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
 	if err != nil {
@@ -29,8 +29,6 @@ func GetNewsbyPage(c *gin.Context) {
 	if page <= 0 {
 		page = 1
 	}
-
-
 	//从redis取数据，没缓存从MySQL取
 	if !(&model.Redis{}).Exists("newsAll") {
 		newsAllJson, totalLength, err = (&model.News{}).FindAll()
@@ -53,16 +51,21 @@ func GetNewsbyPage(c *gin.Context) {
 		firstNum = (page - 1) * 5
 		lastNum = firstNum + 5
 	}
+
+	if firstNum < 0 {
+		firstNum = 0
+	}
 	res := make([]gin.H, lastNum-firstNum)
 	//封装返回数据
 	j := 0
 	for i := firstNum; i < lastNum; i++ {
 		res[j] = gin.H{
-			"content":      newsAllJson[i].Content,
 			"title":        newsAllJson[i].Title,
+			"content":      newsAllJson[i].Content,
+			"time":         newsAllJson[i].Time,
 			"number":       newsAllJson[i].Number,
 			"currentPage ": newsAllJson[i].CurrentPage,
-			"TotalPage":    newsAllJson[i].TotalPage,
+			"totalPage":    newsAllJson[i].TotalPage,
 		}
 		j++
 	}

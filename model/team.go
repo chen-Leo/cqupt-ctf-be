@@ -3,6 +3,7 @@
 package model
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 )
 
@@ -17,15 +18,38 @@ type Team struct {
 }
 
 //创建了一只新队伍
-func (team *Team) InsertNew() (uint, error) {
-	err := db.Create(&team)
+func (team *Team) InsertNew(uid uint) (int, error) {
+	//开启事务
+	tx := db.Begin()
+	//创建队伍
+	err := tx.Create(&team)
 	if err.Error != nil {
-		return 0, err.Error
+		tx.Rollback()
+		return -1, err.Error
 	}
-	return team.ID, nil
+	//根据Uid判断是否加入或创建过其他队伍
+	roleTeam := RoleTeam{Uid: uid, RoleId: 2}
+	if roleTeam.IsAlone() {
+		tx.Rollback()
+		err := fmt.Errorf("%s", "you joined a team before")
+		return -2, err
+	}
+	//加入角色对应表
+	roleTeam.TeamId = team.ID
+	err = tx.Create(&roleTeam)
+	if err.Error != nil {
+		tx.Rollback()
+		return -3, err.Error
+	}
+	tx.Commit()
+	return 0, nil
 }
 
+//删除队伍
 func (team *Team) Delete(teamId uint) error {
+	//删队伍
+	//删队伍角色信息表
+	//数据库已做级联删除
 	err := db.Where("id = ? ", teamId).Delete(&team)
 	if err.Error != nil {
 		return err.Error

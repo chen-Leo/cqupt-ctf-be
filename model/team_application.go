@@ -3,6 +3,7 @@
 package model
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 )
 
@@ -25,18 +26,8 @@ func (application *TeamApplication) InsertNew() error {
 	return nil
 }
 
-//删除用户申请
-func (application *TeamApplication) Delete() error {
-	err := db.Where("uid = ? AND team_id = ?", application.Uid, application.TeamId).Delete(&application)
-	if err.Error != nil {
-		return err.Error
-	}
-	return nil
-}
-
 //判断是否重复申请
 func (application *TeamApplication) AppliedBefore() bool {
-
 	db.Where("uid = ? AND team_id = ?", application.Uid, application.TeamId).First(&application)
 	if application.ID == 0 {
 		return false
@@ -52,6 +43,51 @@ func (application *TeamApplication) FindNameByTeamId() (results []User) {
 	return
 }
 
+func (application *TeamApplication) GetApplicationByUid() {
+	db.Where("uid = ?", application.Uid).First(&application)
+}
+
+//同意用户申请
+func (application *TeamApplication) AgreeJoin(uid uint, ifAgree int) (int, error) {
+
+	//获取当前登陆用户的队伍id，及其角色id（是否是队长）
+	nowRoleTeam := RoleTeam{Uid: uid}
+	nowRoleTeam.RoleAffirm()
+	roleId, teamId := nowRoleTeam.RoleId, nowRoleTeam.TeamId
+
+	if roleId != 2 {
+		err := fmt.Errorf("%s", "you are not the leader")
+		return -1, err
+	}
+	if teamId != application.TeamId {
+		err := fmt.Errorf("%s", "the team application do not exist")
+		return -2, err
+	}
+
+	//开始事务
+	tx := db.Begin()
+
+	if ifAgree == 1 {
+		newrRoleTeam := RoleTeam{Uid: application.Uid, TeamId: teamId, RoleId: 1} //1->队员
+		err := newrRoleTeam.InsertNew()
+		if err != nil {
+			tx.Rollback()
+			return -3, err
+		}
+
+	}
+
+	err := tx.Delete(&application).Error
+	if err != nil {
+		tx.Rollback()
+		return -4, err
+	}
+
+	tx.Commit()
+	return 0, nil
+
+}
+
 //判断所申请的队伍是否开放申请(查的是team表)
 func (application *TeamApplication) IsAllowJoin() bool {
 	var result Team
@@ -63,6 +99,11 @@ func (application *TeamApplication) IsAllowJoin() bool {
 	return false
 }
 
-func (application *TeamApplication) GetApplicationByUid() {
-	db.Where("uid = ?", application.Uid).First(&application)
+//删除用户申请
+func (application *TeamApplication) Delete() error {
+	err := db.Where("uid = ? AND team_id = ?", application.Uid, application.TeamId).Delete(&application)
+	if err.Error != nil {
+		return err.Error
+	}
+	return nil
 }

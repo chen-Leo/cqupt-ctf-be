@@ -5,7 +5,6 @@ package controller
 import (
 	"cqupt-ctf-be/model"
 	response "cqupt-ctf-be/utils/response_utils"
-	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
@@ -68,16 +67,16 @@ func GetTeamMessage(c *gin.Context) {
 	}
 
 	//确认是否是队长
-	switch {
-	case roleId == 2:
+	switch roleId {
+	case 2:
 		isLeader = 1
-	case roleId == 1:
+	case 1:
 		isLeader = -1
 	}
 
 	//查找用户team的队长姓名
 	leaderName, _ := roleTeam.GetLeaderId()
-	fmt.Println(leaderName)
+
 	//获取该用户所在队伍的信息
 	team := model.Team{}
 	team.FindByTeamId(teamId)
@@ -155,32 +154,19 @@ func CreateNewTeam(c *gin.Context) {
 	uid := uidInterface.(uint)
 	//创建新的队伍表(默认允许其他申请加入)
 	newTeam := model.Team{Name: createTeam.Name, Score: 0, Application: 1}
-	//构建新的team_role表（以队长身份) 这里暂时无teamId
-	roleTeam := model.RoleTeam{Uid: uid, RoleId: 2}
 
-	//根据Uid判断是否加入或创建过其他队伍
-	if roleTeam.IsAlone() {
-		response.TeamRoleErr(c)
-		return
-	}
-	//插入一张新的队伍表,无错误返回teamId
-	teamId, err := newTeam.InsertNew()
-	if err != nil {
+	//创建队伍，errInt为错误参数
+	errInt, _ := newTeam.InsertNew(uid)
+	switch errInt {
+	case -1:
 		response.TeamNameExist(c)
-		return
-	}
-
-	//加入teamId
-	roleTeam.TeamId = teamId
-	//插入新的成员信息表
-	err = roleTeam.InsertNew()
-	if err == nil {
+	case -2:
+		response.TeamRoleErr(c)
+	case -3:
+		response.ParamError(c)
+	case 0:
 		response.Ok(c)
-		return
 	}
-
-	_ = newTeam.Delete(newTeam.ID)
-	response.ParamError(c)
 }
 
 //退出或解散该队伍
@@ -199,15 +185,8 @@ func ExitTeam(c *gin.Context) {
 	//如果是队长，解散该队伍
 	if roleTeam.IsLeader() {
 		teamId := roleTeam.TeamId
-		//删除该队伍的所有队伍成员信息表
-		err := roleTeam.DeleteAllByTeamId()
-		if err != nil {
-			response.ParamError(c)
-			return
-		}
-		team := model.Team{}
 		//删掉该队伍信息
-		err = team.Delete(teamId)
+		err := (&model.Team{}).Delete(teamId)
 		if err != nil {
 			response.ParamError(c)
 			return
@@ -234,52 +213,27 @@ func AgreeAdd(c *gin.Context) {
 	uidInterface, _ := c.Get("uid")
 	uid := uidInterface.(uint)
 
-	roleTeam := model.RoleTeam{Uid: uid}
-	roleTeam.RoleAffirm()
-	roleId, teamId := roleTeam.RoleId, roleTeam.TeamId
-
+	//获取申请者的信息
 	user := model.User{Username: teamApplication.NewUserName}
 	user.GetUserMessageByUsername()
-
-	application := model.TeamApplication{Uid: uid}
+	//获取申请表信息
+	application := model.TeamApplication{Uid: user.ID}
 	application.GetApplicationByUid()
 
-	//判断是否加入的本队（恶意构造表单)
-	if teamId != application.TeamId {
-		response.NotYourTeamApplicationError(c)
-		return
-	}
-	//判断是否是队长
-	if roleId == 2 {
-		//不同意申请，有内鬼取消交易
-		if teamApplication.AgreeOrNot == 1 {
-			//同意申请，开始交易
-			roleTeam := model.RoleTeam{Uid: application.Uid, TeamId: teamId, RoleId: 1} //1->队员
-			err = roleTeam.InsertNew()
-			if err != nil {
-				response.ParamError(c)
-				return
-			}
-			err := application.Delete()
-			if err != nil {
-				response.ParamError(c)
-				return
-			}
-			response.Ok(c)
-			return
-
-		}
-		//不同意申请，有内鬼取消交易
-		err := application.Delete()
-		if err == nil {
-			response.Ok(c)
-			return
-		}
+	errInt, _ := application.AgreeJoin(uid, teamApplication.AgreeOrNot)
+	switch errInt {
+	case -1:
+		response.PermissionError(c)
+	case -2:
+		response.TeamApplicationNotExist(c)
+	case -3:
 		response.ParamError(c)
-		return
+	case -4:
+		response.ParamError(c)
+	case 0:
+		response.Ok(c)
 	}
-	//不是队长，权限不足
-	response.PermissionError(c)
+	return
 }
 
 //踢出某人出队伍

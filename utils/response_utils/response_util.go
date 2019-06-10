@@ -138,10 +138,10 @@ func ApplicationAlreadyError(c *gin.Context) {
 }
 
 //create by sao
-func NotYourTeamApplicationError(c *gin.Context) {
+func TeamApplicationNotExist(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  10047,
-		"message": "not your team application, Suspicion of someone doing something ",
+		"message": "the team application do not exist ",
 		"time":    time.Now(),
 	})
 }

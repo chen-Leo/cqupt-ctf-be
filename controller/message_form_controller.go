@@ -19,8 +19,9 @@ func MessageFormAll(c *gin.Context) {
 		if messageForms[i].Pid == 0 {
 			firstpDfs := model.MessageFormReturns{
 				messageForms[i].ID,
-				messageForms[i].Username,
 				messageForms[i].Content,
+				messageForms[i].Username,
+				messageForms[i].CreatedAt.Format("2006-01-02 15:04:05"),
 				make([]model.MessageFormReturns, 0),
 			}
 			model.DFS(&firstpDfs, messageForms)
@@ -38,14 +39,12 @@ func MessageFormAdd(c *gin.Context) {
 		response.ParamError(c)
 		return
 	}
-
 	uidInterface, _ := c.Get("uid")
 	uid := uidInterface.(uint)
 	user := (&model.User{}).GetUserMessageByUid(uid)
 
 	if messageLeave.Pid == 0 {
 		messageForm := model.MessageForm{
-			Pid:      0,
 			Username: user.Username,
 			Content:  messageLeave.Content,
 		}
@@ -62,6 +61,7 @@ func MessageFormAdd(c *gin.Context) {
 		Username: user.Username,
 		Content:  messageLeave.Content,
 	}
+
 	err = messageForm.InsertNew()
 	if err != nil {
 		response.MessageError(c)

@@ -160,17 +160,20 @@ func UserMessageChange(c *gin.Context) {
 	user.GetUserMessageByUid(uid)
 	secret.ToSha256(&changeUserMessage.OldPassword)
 	secret.ToSha256(&changeUserMessage.NewPassword)
+
 	if user.Password != changeUserMessage.OldPassword {
 		response.PasswordError(c)
 		return
 	}
 	user.Password = changeUserMessage.NewPassword
+
 	if changeUserMessage.Name != "" {
 		user.Username = changeUserMessage.Name
 	}
 	if changeUserMessage.Email != "" {
 		user.Email = changeUserMessage.Email
 	}
+
 	err = user.UserMessageChange()
 	if err != nil {
 		response.UsernameOrEmailExist(c)

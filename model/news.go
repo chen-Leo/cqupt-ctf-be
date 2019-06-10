@@ -11,11 +11,12 @@ type News struct {
 }
 
 type NewsReturn struct {
-	Title       string `json:Title`
-	Content     string `json:content`
-	Number      int    `json:Number`
-	CurrentPage int    `json:CurrentPage`
-	TotalPage   int    `json:TotalPage`
+	Title       string
+	Content     string
+	Number      int
+	Time        string
+	CurrentPage int
+	TotalPage   int
 }
 
 //查找数据库中所有的公告，存入redis，并返回封装好的结构体数组,公告个数，存redis可能的错误
@@ -34,6 +35,7 @@ func (n *News) FindAll() (newsAllReturn []NewsReturn, totalLength int, err error
 			news[i].Title,
 			news[i].Content,
 			i + 1,
+			news[i].CreatedAt.Format("2006-01-02 15:04:05"),
 			currentPage,
 			totalLength / 5,
 		})
