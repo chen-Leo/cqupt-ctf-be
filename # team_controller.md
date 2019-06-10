@@ -4,10 +4,10 @@
 ### 接口一 :  创建队伍
 
 #### 请求url：
-* ”/news/get“
+* ”/team/create“
 
 #### 请求方式：
-* GET
+* POST
 
 #### 请求参数列表
 ```
@@ -65,7 +65,7 @@ type CreateTeam struct {
 ### 接口二 ：解散或退出队伍
 *  队长解散自己队伍，不是队长退出该队
 #### 请求url：
-* "/team/exite"
+* "/team/exit"
 
 #### 请求方式：
 * DELETE
@@ -113,7 +113,7 @@ type CreateTeam struct {
 ### 接口三 :  同意他人加入队伍
 
 #### 请求url：
-* ”/team/agreeadd“
+* ”/team/application“
 
 #### 请求方式：
 * POST
