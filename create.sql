@@ -11,7 +11,7 @@
  Target Server Version : 80012
  File Encoding         : 65001
 
- Date: 09/06/2019 13:25:48
+ Date: 11/06/2019 19:03:40
 */
 
 SET NAMES utf8mb4;
@@ -29,7 +29,7 @@ CREATE TABLE `compete`  (
   `updated_at` timestamp(0) NULL DEFAULT NULL,
   `deleted_at` int(11) NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for message_form
@@ -45,8 +45,9 @@ CREATE TABLE `message_form`  (
   `deleted_at` int(11) NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `FKusername_message_form_user`(`username`) USING BTREE,
-  CONSTRAINT `FKusername_message_form_user` FOREIGN KEY (`username`) REFERENCES `user` (`username`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 12 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+  INDEX `FKpid_id_message_form`(`pid`) USING BTREE,
+  CONSTRAINT `FKusername_message_form_user` FOREIGN KEY (`username`) REFERENCES `users` (`username`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 35 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for news
@@ -81,7 +82,7 @@ CREATE TABLE `question`  (
   UNIQUE INDEX `question_id_uindex`(`id`) USING BTREE,
   UNIQUE INDEX `question_name_uindex`(`name`) USING BTREE,
   UNIQUE INDEX `question_flag_uindex`(`flag`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for question_type
@@ -110,8 +111,8 @@ CREATE TABLE `role_team`  (
   INDEX `FKuid_role_user`(`uid`) USING BTREE,
   INDEX `FKtid_role_team`(`team_id`) USING BTREE,
   CONSTRAINT `FKtid_role_team` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `FKuid_role_user` FOREIGN KEY (`uid`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+  CONSTRAINT `FKuid_role_user` FOREIGN KEY (`uid`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 33 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for submit
@@ -129,7 +130,7 @@ CREATE TABLE `submit`  (
   INDEX `FKuid_sumbit_user`(`uid`) USING BTREE,
   INDEX `FKuid_sumbit_question`(`question_id`) USING BTREE,
   CONSTRAINT `FKuid_sumbit_question` FOREIGN KEY (`question_id`) REFERENCES `question` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `FKuid_sumbit_user` FOREIGN KEY (`uid`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `FKuid_sumbit_user` FOREIGN KEY (`uid`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
@@ -147,7 +148,7 @@ CREATE TABLE `team`  (
   `deleted_at` timestamp(0) NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `teamNameOnly`(`name`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 37 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for team_application
@@ -155,8 +156,8 @@ CREATE TABLE `team`  (
 DROP TABLE IF EXISTS `team_application`;
 CREATE TABLE `team_application`  (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `uid` int(11) UNSIGNED ZEROFILL NULL DEFAULT NULL,
-  `team_id` int(11) UNSIGNED ZEROFILL NULL DEFAULT NULL,
+  `uid` int(11) UNSIGNED NULL DEFAULT NULL,
+  `team_id` int(11) UNSIGNED NULL DEFAULT NULL,
   `created_at` timestamp(0) NULL DEFAULT NULL,
   `updated_at` timestamp(0) NULL DEFAULT NULL,
   `deleted_at` timestamp(0) NULL DEFAULT NULL,
@@ -164,14 +165,14 @@ CREATE TABLE `team_application`  (
   INDEX `FKteamid_team_application_question`(`team_id`) USING BTREE,
   INDEX `FKuid_team_application_question`(`uid`) USING BTREE,
   CONSTRAINT `FKteamid_team_application_question` FOREIGN KEY (`team_id`) REFERENCES `team` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `FKuid_team_application_question` FOREIGN KEY (`uid`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+  CONSTRAINT `FKuid_team_application_question` FOREIGN KEY (`uid`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
--- Table structure for user
+-- Table structure for users
 -- ----------------------------
-DROP TABLE IF EXISTS `user`;
-CREATE TABLE `user`  (
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users`  (
   `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `username` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
