@@ -7,20 +7,19 @@ import (
 	response "cqupt-ctf-be/utils/response_utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"strconv"
 )
 
-//获取队伍名
+
 type TeamName struct {
 	TeamName string `json:"teamname" binding:"required"`
 }
 
-//team表
 type CreateTeam struct {
 	Name         string `json:"name" binding:"required"`
 	Introduction string `json:"introduction" `
 }
 
-//队员申请是否同意表
 type TeamApplication struct {
 	NewUserName string `json:"newusername" binding:"required"`
 	AgreeOrNot  int    `json:"agreeornot" binding:"required"`
@@ -35,6 +34,8 @@ type NewTeamMessage struct {
 	Introduction string `json:"introduction" `
 	Application  int    `json:"application" `
 }
+
+
 
 //根据teamId返回的team详细信息
 type TeamMessageAll struct {
@@ -381,5 +382,31 @@ func TeamMessageGetByName(c *gin.Context) {
 	team.FindByTeamName()
 	teamAllMessage := (&model.Team{}).GetTeamMessageAndMember(team.ID)
 	response.OkWithData(c, gin.H{"team": teamAllMessage})
+
+}
+
+func AllTeamGet(c *gin.Context) {
+
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil {
+		response.ParamError(c)
+		return
+	}
+	AllTeams, LastPage := (&model.Team{}).FindByPage(page)
+	totalLength := len(AllTeams)
+
+	res := make([]gin.H, totalLength)
+	//封装返回数据
+	for j := 0; j < totalLength; j++ {
+		res[j] = gin.H{
+			"name":         AllTeams[j].Name,
+			"application":  AllTeams[j].Application,
+			"introduction": AllTeams[j].Introduction,
+			"score":        AllTeams[j].Score,
+			"maxpage":      LastPage,
+		}
+	}
+	response.OkWithArray(c, res)
+	return
 
 }

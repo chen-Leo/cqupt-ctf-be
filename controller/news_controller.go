@@ -9,13 +9,11 @@ import (
 	"strconv"
 )
 
-type NewsGet struct {
-	Page int `json:"page" binding:"required"`
-}
 
 func NewsGetbyPage(c *gin.Context) {
 
 	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+
 	if err != nil {
 		response.ParamError(c)
 		return
@@ -25,7 +23,7 @@ func NewsGetbyPage(c *gin.Context) {
 	var totalLength int
 	var firstNum, lastNum, lastPage int
 
-	//当page为负数时，返回第一页的内容
+	//当page为负数或0时，返回第一页的内容
 	if page <= 0 {
 		page = 1
 	}
@@ -46,8 +44,7 @@ func NewsGetbyPage(c *gin.Context) {
 	if lastPage <= page {
 		firstNum = (lastPage - 1) * 5
 		lastNum = totalLength
-	} else
-	{
+	} else {
 		firstNum = (page - 1) * 5
 		lastNum = firstNum + 5
 	}
@@ -55,6 +52,7 @@ func NewsGetbyPage(c *gin.Context) {
 	if firstNum < 0 {
 		firstNum = 0
 	}
+
 	res := make([]gin.H, lastNum-firstNum)
 	//封装返回数据
 	j := 0

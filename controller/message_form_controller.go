@@ -69,5 +69,4 @@ func MessageFormAdd(c *gin.Context) {
 	}
 	response.Ok(c)
 	return
-
 }

@@ -31,22 +31,19 @@ func SetupRoute() *gin.Engine {
 	g.POST("/submit", controller.Submit)
 	g.GET("/rank", controller.ScoreBoard)
 
-	g.POST("/team/create", controller.CreateNewTeam)   //ok
+	g.POST("/team/create", controller.CreateNewTeam)   //
 	g.POST("/team/application/add", controller.AddNewTeam)
-
+	g.GET("/team/get",controller.AllTeamGet)
 	g.GET("/team/message", controller.GetTeamMessage)
 	g.POST("/team/message",controller.TeamMessageGetByName)
-
 	g.DELETE("/team/exit", controller.ExitTeam) //解散或退出队伍 ok
 	g.POST("/team/application/agree", controller.AgreeAdd)
 	g.DELETE("/team/kick", controller.KickPeople)
-
 	g.PUT("/team/message/change", controller.TeamMessageChange)
 	g.PUT("/team/application/change",controller.ApplicationChange)
 
 	g.POST("/user/message/get", controller.UserMessageGet)
 	g.PUT("/user/message/change", controller.UserMessageChange)
-
 	g.PATCH("/user/password", controller.PasswordChange)
 
 	g.GET("/news/get", controller.NewsGetbyPage)

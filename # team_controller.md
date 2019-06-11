@@ -627,6 +627,151 @@ type NewTeamMessage struct {
 }
 ```
 
+### 接口十 :根据page返回队伍信息列表
+#### 请求url：
+* ”/team/get“
+
+#### 请求方式：
+* get
+
+#### 请求参数列表
+```
+page 为空默认返回第一页
+page <=0 返回第一页
+page >= 最大页数 返回最后一页
+10个为一页
+```
 
 
+
+#### 请求参数说明
+无
+
+
+#### 成功返回示例
+
+##### 成功返回
+
+请求："/team/get?page=-1"
+
+```
+{
+    "data": [
+        {
+            "application": -1,
+            "introduction": "ahahahah",
+            "maxPage": 2,
+            "name": "best",
+            "score": 0
+        },
+        {
+            "application": -1,
+            "introduction": "ahahahah",
+            "maxPage": 2,
+            "name": "best1",
+            "score": 0
+        },
+        {
+            "application": -1,
+            "introduction": "ahahahah",
+            "maxPage": 2,
+            "name": "best111",
+            "score": 0
+        },
+        {
+            "application": -1,
+            "introduction": "ahahahah",
+            "maxPage": 2,
+            "name": "best111111",
+            "score": 0
+        },
+        {
+            "application": -1,
+            "introduction": "ahahahah",
+            "maxPage": 2,
+            "name": "best111111111",
+            "score": 0
+        },
+        {
+            "application": -1,
+            "introduction": "ahahahah",
+            "maxPage": 2,
+            "name": "best111111111111",
+            "score": 0
+        },
+        {
+            "application": -1,
+            "introduction": "ahahahah",
+            "maxPage": 2,
+            "name": "best11111111111111111",
+            "score": 0
+        },
+        {
+            "application": -1,
+            "introduction": "ahahahah",
+            "maxPage": 2,
+            "name": "best1111111111111111111",
+            "score": 0
+        },
+        {
+            "application": -1,
+            "introduction": "ahahahah",
+            "maxPage": 2,
+            "name": "best2222",
+            "score": 0
+        },
+        {
+            "application": -1,
+            "introduction": "ahahahah",
+            "maxPage": 2,
+            "name": "best22122",
+            "score": 0
+        }
+    ],
+    "message": "success",
+    "status": 10000,
+    "time": "2019-06-11T21:50:55.9289607+08:00"
+}
+```
+
+请求："/team/get?page=47876"
+```
+{
+    "data": [
+        {
+            "application": -1,
+            "introduction": "ahahahah",
+            "maxpage": 2,
+            "name": "best222222",
+            "nowpage": 47876,
+            "score": 0
+        }
+    ],
+    "message": "success",
+    "status": 10000,
+    "time": "2019-06-11T21:56:32.8684201+08:00"
+}
+```
+
+
+###### 空值返回
+{
+    "data": [],
+    "message": "success",
+    "status": 10000,
+    "time": "2019-06-11T21:57:57.7525323+08:00"
+}
+
+
+#### 返回参数说明
+|    参数名    |  类型  |                描述                |
+| :----------: | :----: | :--------------------------------: |
+|     name     | string |               队伍名               |
+| introduction | string |                简介                |
+| application  |  int   | 是否开放申请 只能填-1，1，否则报错 |
+| score  |  int   | 分数|
+| maxpage  |  int   | 最大页数|
+
+#### 返回异常错误说明
+无
 

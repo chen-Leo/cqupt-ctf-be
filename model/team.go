@@ -5,6 +5,7 @@ package model
 import (
 	"fmt"
 	"github.com/jinzhu/gorm"
+	"math"
 )
 
 //create by Doc.sao
@@ -75,11 +76,6 @@ func (team *Team) Delete(teamId uint) error {
 	return nil
 }
 
-//查询所有队伍
-func (team *Team) FindAll(teams []*Team) {
-	db.Find(&teams)
-	return
-}
 
 //通过teamId查询某一队伍信息
 func (team *Team) FindByTeamId(teamId uint) {
@@ -104,21 +100,20 @@ func (team *Team) TeamMessageChange() error {
 	return err.Error
 }
 
-//获取所有队员名字
+//获取team全部信息及所有队员
 func (team *Team) GetTeamMessageAndMember(teamId uint) TeamAllMessage {
 	var users []Users
 	var members []string
 
 	db.Where("id = ?", teamId).First(&team)
-
 	db.Table("users").Select("users.username,users.id").
 		Joins("left join role_team on role_team.uid = users.id").
 		Where("role_team.deleted_at  is null AND role_team.team_id = ?", team.ID).
 		Find(&users)
+
 	for i := 0; i < len(users); i++ {
 		members = append(members, users[i].Username)
 	}
-
 	teamAllMessage := TeamAllMessage{
 		Name:         team.Name,
 		Score:        team.Score,
@@ -129,4 +124,41 @@ func (team *Team) GetTeamMessageAndMember(teamId uint) TeamAllMessage {
 	return teamAllMessage
 }
 
+func (team *Team)FindByPage(page int) (TeamAllMessages []TeamAllMessage, lastPage int) {
+	var teams []Team
+	var count,firstNum,lastNum int
+
+	db.Table("team").Where("deleted_at is null").Count(&count)
+
+	lastPage = int(math.Ceil(float64(count) / 10.0))
+	fmt.Println(lastPage)
+    //page小于0 返回第一页
+	if page <= 0 {
+		page = 1
+	}
+	if lastPage <= page {
+		firstNum = (lastPage - 1) * 10
+		lastNum =  count
+	} else {
+		firstNum = (page - 1) * 10
+		lastNum = firstNum + 10
+	}
+
+	fmt.Println(firstNum)
+	fmt.Println(lastNum)
+
+
+	db.Order("score").Order("created_at DESC ").Offset(firstNum).Limit(lastNum).Find(&teams)
+	totalLength := len(teams)
+	for i := 0; i < totalLength; i++ {
+		TeamAllMessages = append(TeamAllMessages, TeamAllMessage{
+			teams[i].Name,
+			teams[i].Score,
+			teams[i].Introduction,
+			teams[i].Application,
+			make([]string, 0), //这里不需要队员名字列表，所以直接置的空
+		})
+	}
+	return
+}
 
