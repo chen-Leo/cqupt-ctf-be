@@ -8,10 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-//队伍成员对应表
+//获取队伍id
 type RoleTeam struct {
-	TeamId uint `json:"teamId" binding:"required"`
+	TeamId uint `json:"teamid" binding:"required"`
 }
+
 
 //team表
 type CreateTeam struct {
@@ -25,9 +26,10 @@ type TeamApplication struct {
 	AgreeOrNot  int    `json:"agreeornot" binding:"required"`
 }
 
-type KickUid struct {
-	PoorUid uint `json:"pooruid" binding:"required"`
+type KickName struct {
+	PoorName string `json:"poorname" binding:"required"`
 }
+
 
 type NewTeamMessage struct {
 	Name         string `json:"name" `
@@ -103,7 +105,7 @@ func GetTeamMessage(c *gin.Context) {
 
 //申请加入新队伍(添加新的加入队伍申请表)
 func AddNewTeam(c *gin.Context) {
-	var add RoleTeam
+	var add TeamName
 	err := c.ShouldBindJSON(&add)
 	if err != nil {
 		response.ParamError(c)
@@ -112,8 +114,12 @@ func AddNewTeam(c *gin.Context) {
 	//获取用户uid
 	uidInterface, _ := c.Get("uid")
 	uid := uidInterface.(uint)
+
+	//获取队伍信息
+	team := model.Team{Name:add.TeamName}
+	team.FindByTeamName()
 	//构建新的队伍申请表
-	application := model.TeamApplication{Uid: uid, TeamId: add.TeamId}
+	application := model.TeamApplication{Uid: uid, TeamId: team.ID}
 	roleTeam := model.RoleTeam{Uid: application.Uid}
 
 	//根据Uid判断是否加入或创建过其他队伍
@@ -126,7 +132,8 @@ func AddNewTeam(c *gin.Context) {
 		response.ApplicationAlreadyError(c)
 		return
 	}
-	//判断所加入的队伍是否开放申请
+
+	//判断所加入的队伍是否开放申请或者是否存在
 	if !application.IsAllowJoin() {
 		response.ApplicationError(c)
 		return
@@ -165,7 +172,11 @@ func CreateNewTeam(c *gin.Context) {
 	case -3:
 		response.ParamError(c)
 	case 0:
-		response.Ok(c)
+		response.OkWithData(c, gin.H{
+			"name":         newTeam.Name,
+			"score":        newTeam.Score,
+			"introduction": newTeam.Introduction,
+			"application":  newTeam.Application})
 	}
 }
 
@@ -230,6 +241,8 @@ func AgreeAdd(c *gin.Context) {
 		response.ParamError(c)
 	case -4:
 		response.ParamError(c)
+	case -5:
+		response.TeamRoleErr(c)
 	case 0:
 		response.Ok(c)
 	}
@@ -238,8 +251,8 @@ func AgreeAdd(c *gin.Context) {
 
 //踢出某人出队伍
 func KickPeople(c *gin.Context) {
-	var kickUid KickUid
-	err := c.ShouldBindJSON(&kickUid)
+	var kickName KickName
+	err := c.ShouldBindJSON(&kickName)
 	if err != nil {
 		response.ParamError(c)
 		return
@@ -248,11 +261,14 @@ func KickPeople(c *gin.Context) {
 	//获取用户uid
 	uidInterface, _ := c.Get("uid")
 	uid := uidInterface.(uint)
+	//获取队员信息
+	poorUser := model.User{Username: kickName.PoorName}
+	poorUser.GetUserMessageByUsername()
 
 	nowRoleTeam := model.RoleTeam{Uid: uid}
 	//判断是否是队长
 	if nowRoleTeam.IsLeader() {
-		kickRoleTeam := model.RoleTeam{Uid: kickUid.PoorUid}
+		kickRoleTeam := model.RoleTeam{Uid: poorUser.ID}
 		err := kickRoleTeam.DeleteByUid()
 		if err != nil {
 			response.ParamError(c)

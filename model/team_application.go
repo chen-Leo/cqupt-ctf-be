@@ -68,8 +68,20 @@ func (application *TeamApplication) AgreeJoin(uid uint, ifAgree int) (int, error
 	tx := db.Begin()
 
 	if ifAgree == 1 {
-		newrRoleTeam := RoleTeam{Uid: application.Uid, TeamId: teamId, RoleId: 1} //1->队员
-		err := newrRoleTeam.InsertNew()
+
+		checkRoleTeam := RoleTeam{Uid: application.Uid}
+		if checkRoleTeam.IsAlone() {
+			err := tx.Delete(&application).Error
+			if err != nil {
+				tx.Rollback()
+				return -4, err
+			}
+			err = fmt.Errorf("%s", "you have joined a team ")
+			return -5, err
+		}
+
+		newRoleTeam := RoleTeam{Uid: application.Uid, TeamId: teamId, RoleId: 1} //1->队员
+		err := newRoleTeam.InsertNew()
 		if err != nil {
 			tx.Rollback()
 			return -3, err
@@ -88,7 +100,7 @@ func (application *TeamApplication) AgreeJoin(uid uint, ifAgree int) (int, error
 
 }
 
-//判断所申请的队伍是否开放申请(查的是team表)
+//判断所申请的队伍是否开放申请或是否存在(查的是team表)
 func (application *TeamApplication) IsAllowJoin() bool {
 	var result Team
 	db.Table("team").

@@ -17,6 +17,10 @@ type Team struct {
 	Application  int                                    //是否接受申请 1->接受，-1->不接受
 }
 
+
+
+
+
 //创建了一只新队伍
 func (team *Team) InsertNew(uid uint) (int, error) {
 	//开启事务
@@ -49,11 +53,19 @@ func (team *Team) InsertNew(uid uint) (int, error) {
 func (team *Team) Delete(teamId uint) error {
 	//删队伍
 	//删队伍角色信息表
-	//数据库已做级联删除
-	err := db.Where("id = ? ", teamId).Delete(&team)
+	//开启事务
+	tx := db.Begin()
+	err :=   tx.Table("role_team").Where("team_id = ?",teamId).Delete(RoleTeam{})
 	if err.Error != nil {
+		tx.Rollback()
 		return err.Error
 	}
+	err = tx.Where("id = ? ", teamId).Delete(&team)
+	if err.Error != nil {
+		tx.Rollback()
+		return err.Error
+	}
+	tx.Commit()
 	return nil
 }
 
@@ -68,6 +80,12 @@ func (team *Team) FindByTeamId(teamId uint) {
 	db.Where("id = ?", teamId).First(&team)
 }
 
+//通过teamname查询某一队伍信息
+func (team *Team) FindByTeamName() {
+	db.Where("name = ?", team.Name).First(&team)
+}
+
+
 //修改队伍是否允许申请的状态
 func (team *Team) ApplicationChange(teamId uint) error {
 	err := db.Model(&team).Where("id = ?", teamId).UpdateColumn("application", gorm.Expr("application * ?", -1))
@@ -79,3 +97,7 @@ func (team *Team) TeamMessageChange() error {
 	err := db.Model(&team).Updates(team)
 	return err.Error
 }
+
+
+
+
