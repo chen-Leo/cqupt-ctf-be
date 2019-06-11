@@ -29,13 +29,24 @@ type CreateTeam struct {
 ##### 返回 
 ```
 {
+    "data": {
+        "application": 1,
+        "introduction": "nothing to say",
+        "name": "test_team114",
+        "score": 0
+    },
     "message": "success",
     "status": 10000,
-    "time": "2019-06-10T16:40:37.9734017+08:00"
+    "time": "2019-06-11T11:13:24.6049473+08:00"
 }
 ```
 #### 返回参数说明
-* 无
+|   参数名    |  类型  |    描述    |
+| :---------: | :----: | :--------: |
+|  name | string |  队伍名  |
+|  score   | int| 分数 |
+|  application   | int| 是否同意申请 1表示同意，-1不同意|
+|introduction|string|简介|
 
 #### 返回异常错误说明
 ##### 参数错误 
@@ -113,7 +124,7 @@ type CreateTeam struct {
 ### 接口三 :  同意他人加入队伍
 
 #### 请求url：
-* ”/team/application“
+* ”/team/application/agree“
 
 #### 请求方式：
 * POST
@@ -171,5 +182,85 @@ type TeamApplication struct {
     "message": "the team application do not exist ",
     "status": 10047,
     "time": "2019-06-10T21:30:34.0675919+08:00"
+}
+```
+##### 申请者已加队伍错误 
+```
+{
+    "message": "error,you already join a team, you can not join or create other team",
+    "status": 10041,
+    "time": "2019-06-11T11:44:18.2110606+08:00"
+}
+```
+
+
+### 接口三 :  申请加入某队
+
+#### 请求url：
+* ”/team/application/add“
+
+#### 请求方式：
+* POST
+
+#### 请求参数列表
+```
+type TeamName struct {
+	TeamName string `json:"teamname" binding:"required"`
+}
+```
+
+|   参数名    |  类型  |    描述    |是否必须|
+| :---------: | :----: | :--------: | :--------: |
+|   teamname   | string |  想要申请加入的队伍名字  |必须 |
+
+
+
+
+#### 成功返回示例
+
+##### 返回 
+```
+{
+    "message": "success",
+    "status": 10000,
+    "time": "2019-06-11T11:31:04.3568873+08:00"
+}
+```
+#### 返回参数说明
+* 无
+
+#### 返回异常错误说明
+##### 参数错误 
+```
+{
+    "message": "param error",
+    "status": 10001,
+    "time": "2019-06-10T13:23:07.7096313+08:00"
+}
+```
+
+##### 队伍未开放申请或队伍不存在（已注销)重复错误 
+```
+{
+    "message": "the team is not open the application or team is not exit",
+    "status": 10044,
+    "time": "2019-06-11T11:28:11.0506256+08:00"
+}
+```
+##### 重复申请错误 
+```
+{
+    "message": "Application Already before",
+    "status": 10046,
+    "time": "2019-06-11T11:31:40.9616975+08:00"
+}
+```
+
+##### 已有队伍错误
+```
+{
+    "message": "error,you already join a team, you can not join or create other team",
+    "status": 10041,
+    "time": "2019-06-11T11:33:07.388652+08:00"
 }
 ```
