@@ -17,7 +17,13 @@ type Team struct {
 	Application  int                                    //是否接受申请 1->接受，-1->不接受
 }
 
-
+type TeamAllMessage struct {
+	Name         string
+	Score        uint
+	Introduction string                                   //队伍简介
+	Application  int                                    //是否接受申请 1->接受，-1->不接受
+	Members     []string
+}
 
 
 
@@ -98,6 +104,29 @@ func (team *Team) TeamMessageChange() error {
 	return err.Error
 }
 
+//获取所有队员名字
+func (team *Team) GetTeamMessageAndMember(teamId uint) TeamAllMessage {
+	var users []Users
+	var members []string
 
+	db.Where("id = ?", teamId).First(&team)
+
+	db.Table("users").Select("users.username,users.id").
+		Joins("left join role_team on role_team.uid = users.id").
+		Where("role_team.deleted_at  is null AND role_team.team_id = ?", team.ID).
+		Find(&users)
+	for i := 0; i < len(users); i++ {
+		members = append(members, users[i].Username)
+	}
+
+	teamAllMessage := TeamAllMessage{
+		Name:         team.Name,
+		Score:        team.Score,
+		Introduction: team.Introduction,
+		Application:  team.Application,
+		Members:      members,
+	}
+	return teamAllMessage
+}
 
 

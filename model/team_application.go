@@ -36,9 +36,9 @@ func (application *TeamApplication) AppliedBefore() bool {
 }
 
 //查找所有申请该队的用户名及id
-func (application *TeamApplication) FindNameByTeamId() (results []User) {
-	db.Table("user").
-		Joins("left join team_application on team_application.uid = user.id").
+func (application *TeamApplication) FindNameByTeamId() (results []Users) {
+	db.Table("users").
+		Joins("left join team_application on team_application.uid = users.id").
 		Where("team_application.team_id = ?", application.TeamId).Scan(&results)
 	return
 }

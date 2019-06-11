@@ -35,14 +35,17 @@ func SetupRoute() *gin.Engine {
 	g.POST("/team/application/add", controller.AddNewTeam)
 
 	g.GET("/team/message", controller.GetTeamMessage)
+	g.POST("/team/message",controller.TeamMessageGetByName)
+
 	g.DELETE("/team/exit", controller.ExitTeam) //解散或退出队伍 ok
 	g.POST("/team/application/agree", controller.AgreeAdd)
 	g.DELETE("/team/kick", controller.KickPeople)
 
 	g.PUT("/team/message/change", controller.TeamMessageChange)
+	g.PUT("/team/application/change",controller.ApplicationChange)
 
-	g.POST("/user/message", controller.UserMessageGet)
-	g.PUT("/user/message", controller.UserMessageChange)
+	g.POST("/user/message/get", controller.UserMessageGet)
+	g.PUT("/user/message/change", controller.UserMessageChange)
 
 	g.PATCH("/user/password", controller.PasswordChange)
 

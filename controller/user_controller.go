@@ -36,6 +36,8 @@ type ChangeUserMessage struct {
 	OldPassword string `json:"oldpassword"`
 	NewPassword string `json:"newpassword"`
 	Email       string `json:"email"`
+	Motto       string `json:"motto"`
+
 }
 
 func Login(c *gin.Context) {
@@ -45,7 +47,7 @@ func Login(c *gin.Context) {
 		response.ParamError(c)
 		return
 	}
-	user := model.User{Username: login.Username, Password: login.Password}
+	user := model.Users{Username: login.Username, Password: login.Password}
 	secret.ToSha256(&user.Password)
 	err = user.FindByUsernameAndPassword()
 	if err == nil {
@@ -82,7 +84,7 @@ func SignUp(c *gin.Context) {
 		response.ParamError(c)
 		return
 	}
-	user := model.User{
+	user := model.Users{
 		Username: signUpUser.Username,
 		Password: signUpUser.Password,
 		Email:    signUpUser.Email,
@@ -124,8 +126,9 @@ func PasswordChange(c *gin.Context) {
 	uidInterface, _ := c.Get("uid")
 	uid := uidInterface.(uint)
 
-	user := model.User{}
+	user := model.Users{}
 	user.GetUserMessageByUid(uid)
+
 	secret.ToSha256(&changePassword.OldPassword)
 	secret.ToSha256(&changePassword.NewPassword)
 
@@ -155,17 +158,27 @@ func UserMessageChange(c *gin.Context) {
 	//获取用户uid
 	uidInterface, _ := c.Get("uid")
 	uid := uidInterface.(uint)
-
-	user := model.User{}
+	//获取用户原信息
+	user := model.Users{}
 	user.GetUserMessageByUid(uid)
-	secret.ToSha256(&changeUserMessage.OldPassword)
-	secret.ToSha256(&changeUserMessage.NewPassword)
+	//获取用户队伍信息
+	roleTeam := model.RoleTeam{Uid: user.ID}
+	roleTeam.RoleAffirm()
+	team := model.Team{}
+	team.FindByTeamId(roleTeam.TeamId)
 
-	if user.Password != changeUserMessage.OldPassword {
-		response.PasswordError(c)
-		return
+	if changeUserMessage.OldPassword != "" && changeUserMessage.NewPassword != "" {
+
+		secret.ToSha256(&changeUserMessage.OldPassword)
+		secret.ToSha256(&changeUserMessage.NewPassword)
+
+		if user.Password != changeUserMessage.OldPassword {
+			response.PasswordError(c)
+			return
+		}
+
+		user.Password = changeUserMessage.NewPassword
 	}
-	user.Password = changeUserMessage.NewPassword
 
 	if changeUserMessage.Name != "" {
 		user.Username = changeUserMessage.Name
@@ -173,13 +186,22 @@ func UserMessageChange(c *gin.Context) {
 	if changeUserMessage.Email != "" {
 		user.Email = changeUserMessage.Email
 	}
+	if changeUserMessage.Motto != "" {
+		user.Motto = changeUserMessage.Motto
+	}
 
 	err = user.UserMessageChange()
 	if err != nil {
 		response.UsernameOrEmailExist(c)
 		return
 	}
-	response.Ok(c)
+	response.OkWithData(c, gin.H{
+		"teamname": team.Name,
+		"username": user.Username,
+		"email":    user.Email,
+		"motto":    user.Motto,
+	})
+
 }
 
 //通过用户名获得用户信息
@@ -190,13 +212,16 @@ func UserMessageGet(c *gin.Context) {
 		response.ParamError(c)
 		return
 	}
-	user := model.User{Username: getUserMessage.Username}
+	user := model.Users{Username: getUserMessage.Username}
 	user.GetUserMessageByUsername()
 	if user.ID != 0 {
 		roleTeam := model.RoleTeam{Uid: user.ID}
 		roleTeam.RoleAffirm()
+		team := model.Team{}
+		team.FindByTeamId(roleTeam.TeamId)
+
 		response.OkWithData(c, gin.H{
-			"teamid":   roleTeam.TeamId,
+			"teamname": team.Name,
 			"username": user.Username,
 			"email":    user.Email,
 			"motto":    user.Motto,
@@ -205,3 +230,5 @@ func UserMessageGet(c *gin.Context) {
 	}
 	response.OkWithData(c, gin.H{})
 }
+
+

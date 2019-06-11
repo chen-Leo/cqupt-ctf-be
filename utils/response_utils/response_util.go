@@ -146,6 +146,35 @@ func TeamApplicationNotExist(c *gin.Context) {
 	})
 }
 
+
+
+//create by sao
+func UserNameNotExist(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":  10048,
+		"message": "username is not exist",
+		"time":    time.Now(),
+	})
+}
+
+func KickYourself(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":  10049,
+		"message": "you can not kick yourself",
+		"time":    time.Now(),
+	})
+}
+
+
+func NotYourMember(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":  10140,
+		"message": "not your member",
+		"time":    time.Now(),
+	})
+}
+
+
 func RedisError(c *gin.Context) {
 	c.JSON(http.StatusBadRequest, gin.H{
 		"status":  10051,
@@ -161,3 +190,7 @@ func MessageError(c *gin.Context) {
 		"time":    time.Now(),
 	})
 }
+
+
+
+

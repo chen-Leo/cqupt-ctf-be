@@ -34,7 +34,7 @@ func (s Ranks) Swap(i, j int) {
 }
 
 func ScoreBoard(c *gin.Context) {
-	users := (&model.User{}).FindAll()
+	users := (&model.Users{}).FindAll()
 	rank := Ranks(make([]RankEntity, len(users)))
 	for i := 0; i < len(users); i++ {
 		u := users[i]

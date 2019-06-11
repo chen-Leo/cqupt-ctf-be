@@ -41,7 +41,7 @@ func MessageFormAdd(c *gin.Context) {
 	}
 	uidInterface, _ := c.Get("uid")
 	uid := uidInterface.(uint)
-	user := (&model.User{}).GetUserMessageByUid(uid)
+	user := (&model.Users{}).GetUserMessageByUid(uid)
 
 	if messageLeave.Pid == 0 {
 		messageForm := model.MessageForm{

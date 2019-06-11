@@ -6,7 +6,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type User struct {
+type Users struct {
 	gorm.Model
 	Username string
 	Password string
@@ -14,7 +14,7 @@ type User struct {
 	Motto    string
 }
 
-func (u *User) FindByUsernameAndPassword() error {
+func (u *Users) FindByUsernameAndPassword() error {
 	err := db.Where(u).First(&u)
 	if err.Error != nil {
 		fmt.Println(err.Error.Error())
@@ -23,7 +23,7 @@ func (u *User) FindByUsernameAndPassword() error {
 	return nil
 }
 
-func (u *User) InsertNew() error {
+func (u *Users) InsertNew() error {
 	err := db.Create(&u)
 	if err.Error != nil {
 		return err.Error
@@ -31,12 +31,12 @@ func (u *User) InsertNew() error {
 	return nil
 }
 
-func (u *User) FindAll() (users []*User) {
+func (u *Users) FindAll() (users []*Users) {
 	db.Find(&users)
 	return
 }
 
-func (u *User) FindRank() (solved uint, submitted uint, score uint) {
+func (u *Users) FindRank() (solved uint, submitted uint, score uint) {
 	var submits []Submit
 	db.Where("uid = ?", u.ID).Find(&submits)
 	submitted = uint(len(submits))
@@ -54,17 +54,17 @@ func (u *User) FindRank() (solved uint, submitted uint, score uint) {
 }
 
 //根据uid返回用户user信息
-func (u *User) GetUserMessageByUid(uid uint) *User {
+func (u *Users) GetUserMessageByUid(uid uint) *Users {
 	db.Where("id = ?", uid).First(&u)
 	return u
 }
 
 //更具username返回user信息
-func (u *User) GetUserMessageByUsername() {
+func (u *Users) GetUserMessageByUsername() {
 	db.Where("username = ?", u.Username).First(&u)
 }
 
-func (u *User) UserMessageChange() error {
+func (u *Users) UserMessageChange() error {
 	err := db.Model(&u).Updates(u)
 	return err.Error
 }

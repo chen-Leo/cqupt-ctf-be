@@ -5,14 +5,14 @@ package controller
 import (
 	"cqupt-ctf-be/model"
 	response "cqupt-ctf-be/utils/response_utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
-//获取队伍id
-type RoleTeam struct {
-	TeamId uint `json:"teamid" binding:"required"`
+//获取队伍名
+type TeamName struct {
+	TeamName string `json:"teamname" binding:"required"`
 }
-
 
 //team表
 type CreateTeam struct {
@@ -30,7 +30,6 @@ type KickName struct {
 	PoorName string `json:"poorname" binding:"required"`
 }
 
-
 type NewTeamMessage struct {
 	Name         string `json:"name" `
 	Introduction string `json:"introduction" `
@@ -46,6 +45,7 @@ type TeamMessageAll struct {
 	Application      int      //是否接受申请 1->接受，-1- // >不接受 ->数据库取
 	LsLeader         int      //是否是队长，1->是，-1->不是
 	ApplicationUsers []string //申请人列表
+	Members          []string //队员名字
 }
 
 //获当前用户的队伍信息并判断当前用户是否是leader
@@ -75,30 +75,29 @@ func GetTeamMessage(c *gin.Context) {
 	case 1:
 		isLeader = -1
 	}
-
 	//查找用户team的队长姓名
 	leaderName, _ := roleTeam.GetLeaderId()
-
 	//获取该用户所在队伍的信息
 	team := model.Team{}
-	team.FindByTeamId(teamId)
-
+	//获取该队的其他队员
+	teamAllMessage := team.GetTeamMessageAndMember(teamId)
 	//获取申请该队的用户切片
 	teamApplication := model.TeamApplication{TeamId: teamId}
 	userApplication := teamApplication.FindNameByTeamId()
+
 	for i := 0; i < len(userApplication); i++ {
 		applicationUsers = append(applicationUsers, userApplication[i].Username)
 	}
-
 	//封装数据
 	teamMessageAll := TeamMessageAll{
-		Name:             team.Name,
-		Score:            team.Score,
-		LeaderName:       leaderName,        //队长
-		Introduction:     team.Introduction, //队伍简介 ->数据库取
-		Application:      team.Application,  //是否接受申请 1->接受，-1->不接受 ->数据库取
-		LsLeader:         isLeader,          //是否是队长，1->是，-1->不是
-		ApplicationUsers: applicationUsers,  //申请人名字列表
+		Name:             teamAllMessage.Name,
+		Score:            teamAllMessage.Score,
+		LeaderName:       leaderName,                  //队长
+		Introduction:     teamAllMessage.Introduction, //队伍简介 ->数据库取
+		Application:      teamAllMessage.Application,  //是否接受申请 1->接受，-1->不接受 ->数据库取
+		LsLeader:         isLeader,                    //是否是队长，1->是，-1->不是
+		ApplicationUsers: applicationUsers,            //申请人名字列表
+		Members:          teamAllMessage.Members,
 	}
 	response.OkWithData(c, gin.H{"team": teamMessageAll})
 }
@@ -116,7 +115,7 @@ func AddNewTeam(c *gin.Context) {
 	uid := uidInterface.(uint)
 
 	//获取队伍信息
-	team := model.Team{Name:add.TeamName}
+	team := model.Team{Name: add.TeamName}
 	team.FindByTeamName()
 	//构建新的队伍申请表
 	application := model.TeamApplication{Uid: uid, TeamId: team.ID}
@@ -194,7 +193,7 @@ func ExitTeam(c *gin.Context) {
 		return
 	}
 	//如果是队长，解散该队伍
-	if roleTeam.IsLeader() {
+	if roleTeam.IsLeader(){
 		teamId := roleTeam.TeamId
 		//删掉该队伍信息
 		err := (&model.Team{}).Delete(teamId)
@@ -225,7 +224,7 @@ func AgreeAdd(c *gin.Context) {
 	uid := uidInterface.(uint)
 
 	//获取申请者的信息
-	user := model.User{Username: teamApplication.NewUserName}
+	user := model.Users{Username: teamApplication.NewUserName}
 	user.GetUserMessageByUsername()
 	//获取申请表信息
 	application := model.TeamApplication{Uid: user.ID}
@@ -257,24 +256,38 @@ func KickPeople(c *gin.Context) {
 		response.ParamError(c)
 		return
 	}
-
 	//获取用户uid
 	uidInterface, _ := c.Get("uid")
 	uid := uidInterface.(uint)
 	//获取队员信息
-	poorUser := model.User{Username: kickName.PoorName}
+	poorUser := model.Users{Username: kickName.PoorName}
 	poorUser.GetUserMessageByUsername()
 
 	nowRoleTeam := model.RoleTeam{Uid: uid}
+	nowRoleTeam.RoleAffirm()
+	if poorUser.ID == 0 {
+		response.UserNameNotExist(c)
+		return
+	}
+	if poorUser.ID == uid {
+		response.KickYourself(c)
+		return
+	}
 	//判断是否是队长
-	if nowRoleTeam.IsLeader() {
+	fmt.Println(nowRoleTeam)
+	if nowRoleTeam.RoleId == 2  {
 		kickRoleTeam := model.RoleTeam{Uid: poorUser.ID}
-		err := kickRoleTeam.DeleteByUid()
-		if err != nil {
-			response.ParamError(c)
+		kickRoleTeam.RoleAffirm()
+		if nowRoleTeam.TeamId == kickRoleTeam.TeamId {
+			err := kickRoleTeam.DeleteByUid()
+			if err != nil {
+				response.ParamError(c)
+				return
+			}
+			response.Ok(c)
 			return
 		}
-		response.Ok(c)
+		response.NotYourMember(c)
 		return
 	}
 	//不是队长，权限不足
@@ -295,10 +308,12 @@ func ApplicationChange(c *gin.Context) {
 	if nowRoleId == 2 {
 		applicationChangeTeamTable := model.Team{}
 		err := applicationChangeTeamTable.ApplicationChange(teamId)
+
 		if err != nil {
 			response.ParamError(c)
 			return
 		}
+
 		response.Ok(c)
 		return
 	}
@@ -328,19 +343,43 @@ func TeamMessageChange(c *gin.Context) {
 		//获取team原信息
 		team := model.Team{}
 		team.FindByTeamId(teamId)
+
 		//更新数据
-		team.Name = newTeamMessage.Name
-		team.Application = newTeamMessage.Application
-		team.Introduction = newTeamMessage.Introduction
+		if newTeamMessage.Name != "" {
+			team.Name = newTeamMessage.Name
+		}
+		if newTeamMessage.Application != 0 {
+			team.Application = newTeamMessage.Application
+		}
+		if newTeamMessage.Introduction != "" {
+			team.Introduction = newTeamMessage.Introduction
+		}
 
 		err := team.TeamMessageChange()
 		if err != nil {
-			response.ParamError(c)
+			response.TeamNameExist(c)
 			return
 		}
-		response.Ok(c)
+		teamAllMessage := team.GetTeamMessageAndMember(uid)
+		response.OkWithData(c,gin.H{"team":teamAllMessage})
 		return
 	}
 	//不是队长，权限不足
 	response.PermissionError(c)
+}
+
+
+
+func TeamMessageGetByName(c *gin.Context) {
+	var TeamName TeamName
+	err := c.ShouldBindJSON(&TeamName)
+	if err != nil {
+		response.ParamError(c)
+		return
+	}
+	team := model.Team{Name: TeamName.TeamName}
+	team.FindByTeamName()
+	teamAllMessage := (&model.Team{}).GetTeamMessageAndMember(team.ID)
+	response.OkWithData(c, gin.H{"team": teamAllMessage})
+
 }

@@ -3,6 +3,7 @@
 package model
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
 )
 
@@ -40,6 +41,7 @@ func (roleTeam *RoleTeam) IsAlone() bool {
 func (roleTeam *RoleTeam) IsLeader() bool {
 	var count int
 	db.Table("role_team").Where("uid = ?  AND role_id = 2", roleTeam.Uid).Count(&count)
+	fmt.Println(count)
 	if count == 0 {
 		return false
 	}
@@ -71,9 +73,9 @@ func (roleTeam *RoleTeam) RoleAffirm() {
 
 //获取队长名字及id
 func (roleTeam *RoleTeam) GetLeaderId() (string, uint) {
-	var leader User
-	db.Table("user").Select("user.username,user.id").
-		Joins("left join role_team on role_team.uid = user.id").
+	var leader Users
+	db.Table("users").Select("users.username,users.id").
+		Joins("left join role_team on role_team.uid = users.id").
 		Where("role_team.role_id = 2 AND role_team.team_id = ?", roleTeam.TeamId).
 		Scan(&leader)
 	return leader.Username, leader.ID
