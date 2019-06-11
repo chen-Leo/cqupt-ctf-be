@@ -11,6 +11,7 @@ type CompeteReturn struct {
 	Introduction string
 	CreateTime   string
 	Type         string
+	EndTime     string
 }
 
 type CompeteReturns [] CompeteReturn
@@ -25,6 +26,7 @@ func CompeteAll(c *gin.Context) {
 			u.Introduction,
 			u.CreatedAt.Format("2006-01-02 15:04:05"),
 			u.Type,
+			u.EndTime.Format("2006-01-02 15:04:05"),
 		}
 		competeReturns[i] = r
 	}
