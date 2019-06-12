@@ -37,7 +37,6 @@ type ChangeUserMessage struct {
 	NewPassword string `json:"newpassword"`
 	Email       string `json:"email"`
 	Motto       string `json:"motto"`
-
 }
 
 func Login(c *gin.Context) {

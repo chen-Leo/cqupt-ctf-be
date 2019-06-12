@@ -12,24 +12,27 @@ type MessageLeave struct {
 }
 
 func MessageFormAll(c *gin.Context) {
-	messageForms := (&model.MessageForm{}).FindAll()
-	length := len(messageForms)
+
+	messages := (&model.MessageForm{}).FindByPage()
+	length := len(messages)
 	var messageFormReturns []model.MessageFormReturns
 	for i := 0; i < length; i++ {
-		if messageForms[i].Pid == 0 {
+		if messages[i].Pid == 0 {
 			firstpDfs := model.MessageFormReturns{
-				messageForms[i].ID,
-				messageForms[i].Content,
-				messageForms[i].Username,
-				messageForms[i].CreatedAt.Format("2006-01-02 15:04:05"),
-				make([]model.MessageFormReturns, 0),
+				Id:       messages[i].Id,
+				Content:  messages[i].Content,
+				Username: messages[i].Username,
+				Time:     messages[i].CreatedAt.Format("2006-01-02 15:04:05"),
+
+				OthersMessageForm: make([]model.MessageFormReturns, 0),
 			}
-			model.DFS(&firstpDfs, messageForms)
+			model.DFS(&firstpDfs, messages)
 			messageFormReturns = append(messageFormReturns, firstpDfs)
-			length = len(messageForms)
+			length = len(messages)
 		}
 	}
 	response.OkWithData(c, gin.H{"message": messageFormReturns})
+
 }
 
 func MessageFormAdd(c *gin.Context) {
@@ -41,12 +44,11 @@ func MessageFormAdd(c *gin.Context) {
 	}
 	uidInterface, _ := c.Get("uid")
 	uid := uidInterface.(uint)
-	user := (&model.Users{}).GetUserMessageByUid(uid)
 
 	if messageLeave.Pid == 0 {
 		messageForm := model.MessageForm{
-			Username: user.Username,
-			Content:  messageLeave.Content,
+			Uid:     uid,
+			Content: messageLeave.Content,
 		}
 		err := messageForm.InsertNew()
 		if err != nil {
@@ -56,10 +58,11 @@ func MessageFormAdd(c *gin.Context) {
 		response.Ok(c)
 		return
 	}
+
 	messageForm := model.MessageForm{
-		Pid:      messageLeave.Pid,
-		Username: user.Username,
-		Content:  messageLeave.Content,
+		Pid:     messageLeave.Pid,
+		Uid:     uid,
+		Content: messageLeave.Content,
 	}
 
 	err = messageForm.InsertNew()

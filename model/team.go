@@ -104,13 +104,11 @@ func (team *Team) TeamMessageChange() error {
 func (team *Team) GetTeamMessageAndMember(teamId uint) TeamAllMessage {
 	var users []Users
 	var members []string
-
 	db.Where("id = ?", teamId).First(&team)
 	db.Table("users").Select("users.username,users.id").
 		Joins("left join role_team on role_team.uid = users.id").
-		Where("role_team.deleted_at  is null AND role_team.team_id = ?", team.ID).
+		Where("role_team.deleted_at is null AND role_team.team_id = ?", team.ID).
 		Find(&users)
-
 	for i := 0; i < len(users); i++ {
 		members = append(members, users[i].Username)
 	}
@@ -143,10 +141,6 @@ func (team *Team)FindByPage(page int) (TeamAllMessages []TeamAllMessage, lastPag
 		firstNum = (page - 1) * 10
 		lastNum = firstNum + 10
 	}
-
-	fmt.Println(firstNum)
-	fmt.Println(lastNum)
-
 
 	db.Order("score").Order("created_at DESC ").Offset(firstNum).Limit(lastNum).Find(&teams)
 	totalLength := len(teams)

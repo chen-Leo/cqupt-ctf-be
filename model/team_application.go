@@ -49,12 +49,10 @@ func (application *TeamApplication) GetApplicationByUid() {
 
 //同意用户申请
 func (application *TeamApplication) AgreeJoin(uid uint, ifAgree int) (int, error) {
-
 	//获取当前登陆用户的队伍id，及其角色id（是否是队长）
 	nowRoleTeam := RoleTeam{Uid: uid}
 	nowRoleTeam.RoleAffirm()
 	roleId, teamId := nowRoleTeam.RoleId, nowRoleTeam.TeamId
-
 	if roleId != 2 {
 		err := fmt.Errorf("%s", "you are not the leader")
 		return -1, err
@@ -63,12 +61,9 @@ func (application *TeamApplication) AgreeJoin(uid uint, ifAgree int) (int, error
 		err := fmt.Errorf("%s", "the team application do not exist")
 		return -2, err
 	}
-
 	//开始事务
 	tx := db.Begin()
-
 	if ifAgree == 1 {
-
 		checkRoleTeam := RoleTeam{Uid: application.Uid}
 		if checkRoleTeam.IsAlone() {
 			err := tx.Delete(&application).Error
@@ -79,7 +74,6 @@ func (application *TeamApplication) AgreeJoin(uid uint, ifAgree int) (int, error
 			err = fmt.Errorf("%s", "you have joined a team ")
 			return -5, err
 		}
-
 		newRoleTeam := RoleTeam{Uid: application.Uid, TeamId: teamId, RoleId: 1} //1->队员
 		err := newRoleTeam.InsertNew()
 		if err != nil {
@@ -88,16 +82,13 @@ func (application *TeamApplication) AgreeJoin(uid uint, ifAgree int) (int, error
 		}
 
 	}
-
 	err := tx.Delete(&application).Error
 	if err != nil {
 		tx.Rollback()
 		return -4, err
 	}
-
 	tx.Commit()
 	return 0, nil
-
 }
 
 //判断所申请的队伍是否开放申请或是否存在(查的是team表)
